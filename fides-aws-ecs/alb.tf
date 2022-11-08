@@ -55,7 +55,7 @@ resource "aws_lb_listener_rule" "fides" {
 
   condition {
     path_pattern {
-      values = ["/api/v*", "/health", "/docs"]
+      values = ["/*"]
     }
   }
 }
