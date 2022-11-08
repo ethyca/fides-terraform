@@ -1,0 +1,10 @@
+terraform:
+  - "**/*.tf"
+  - "**/.terraform.lock.hcl"
+  - "**/*.tftpl"
+
+documentation:
+  - "**/*.md"
+
+ci/cd:
+  - ".github/**/*"
