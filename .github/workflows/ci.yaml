@@ -1,0 +1,21 @@
+name: ci
+on:
+  pull_request:
+    paths-ignore:
+      - "**.md"
+jobs:
+  check-terraform-formatting:
+    runs-on: ubuntu-latest
+    env:
+      TF_IN_AUTOMATION: 1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Terraform
+        id: tf-setup
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.3.2
+      - name: Check Terraform Formatting
+        id: tf-fmt
+        run: terraform fmt -check -recursive -no-color
