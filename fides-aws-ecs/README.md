@@ -20,7 +20,7 @@ module "fides_aws_ecs" {
 
   primary_subnet   = "<SUBNET_ID>"
   alternate_subnet = "<SUBNET_ID>"
-  allowed_ips            = ["<IP Range in CIDR notation>"] # To make it publicly accessible, add 0.0.0.0/0
+  allowed_ips      = ["<IP Range in CIDR notation>"] # To make it publicly accessible, add 0.0.0.0/0
 
   fides_identity_verification           = false
   fides_require_manual_request_approval = true
