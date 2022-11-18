@@ -27,7 +27,7 @@ locals {
     {
       name  = "FIDES__SECURITY__ROOT_USERNAME"
       value = var.fides_root_user
-    },
+    }
   ]
   container_def = [
     {
@@ -77,7 +77,6 @@ locals {
           name      = "FIDES__SECURITY__ROOT_PASSWORD"
           valueFrom = aws_ssm_parameter.fides_root_password.arn
         }
-
       ]
 
       environment = local.environment_variables

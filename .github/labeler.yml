@@ -1,7 +1,5 @@
-terraform:
-  - "**/*.tf"
-  - "**/.terraform.lock.hcl"
-  - "**/*.tftpl"
+terraform/fides-aws-ecs:
+  - "fides-aws-ecs/**/*"
 
 documentation:
   - "**/*.md"
