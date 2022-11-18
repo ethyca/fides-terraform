@@ -1,3 +1,10 @@
+# Load Balancer Outputs
+
+output "fides_endpoint" {
+  description = "The DNS name of the Fides load balancer."
+  value       = aws_lb.fides_lb.dns_name
+}
+
 # Database Outputs
 
 output "postgres_endpoint" {
