@@ -1,7 +1,7 @@
 # General 
 
 variable "environment_name" {
-  description = "The environment name or identifier used to delineate separate Fides instances, e.g. qa, production, etc."
+  description = "The environment name or identifier used to delineate separate Fides instances, e.g. qa, staging, production, etc."
   type        = string
   default     = "staging"
 
@@ -135,7 +135,7 @@ variable "fides_image" {
 variable "fides_version" {
   description = "The Fides Version to deploy. Must be a valid Docker tag."
   type        = string
-  default     = "2.0.0"
+  default     = "2.1.0"
 }
 
 variable "fides_cpu" {
