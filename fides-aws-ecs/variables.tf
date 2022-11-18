@@ -77,8 +77,8 @@ variable "fides_log_level" {
   default     = "INFO"
 
   validation {
-    condition     = length(regexall("^(TRACE|DEBUG|INFO|WARNING|ERROR|CRITICAL)$", upper(var.fides_log_level))) > 0
-    error_message = "the logging level must be one of the following values: \"TRACE\", \"DEBUG\", \"INFO\", \"WARNING\", \"ERROR\", or \"CRITICAL\""
+    condition     = length(regexall("^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$", upper(var.fides_log_level))) > 0
+    error_message = "the logging level must be one of the following values: \"DEBUG\", \"INFO\", \"WARNING\", \"ERROR\", or \"CRITICAL\""
   }
 }
 

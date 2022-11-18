@@ -24,6 +24,6 @@ module "fides_aws_ecs" {
 
   fides_identity_verification           = false
   fides_require_manual_request_approval = true
-  fides_log_level                       = "<Logging level>" # Valid values include TRACE, DEBUG, INFO, WARNING, ERROR, and CRITICAL
+  fides_log_level                       = "<Logging level>" # Valid values include DEBUG, INFO, WARNING, ERROR, and CRITICAL
 }
 ```
