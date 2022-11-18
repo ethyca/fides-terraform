@@ -9,6 +9,22 @@ locals {
       value = tostring(var.fides_analytics_opt_out)
     },
     {
+      name  = "FIDES__DATABASE__SERVER"
+      value = aws_db_instance.postgres.address
+    },
+    {
+      name  = "FIDES__DATABASE__PORT"
+      value = aws_db_instance.postgres.port
+    },
+    {
+      name  = "FIDES__DATABASE__DB"
+      value = aws_db_instance.postgres.db_name
+    },
+    {
+      name  = "FIDES__DATABASE__USERNAME"
+      value = aws_db_instance.postgres.username
+    },
+    {
       name  = "FIDES__REDIS__PORT"
       value = tostring(aws_elasticache_replication_group.fides_redis.port)
     },
@@ -54,8 +70,8 @@ locals {
       secrets = [
         {
           # Need to use the connection string format to pass in the sslMode parameter.
-          name      = "FIDES__DATABASE__SQLALCHEMY_DATABASE_URI"
-          valueFrom = aws_ssm_parameter.postgres_connection_string.arn
+          name      = "FIDES__DATABASE__PASSWORD"
+          valueFrom = aws_ssm_parameter.postgres_password
         },
         {
           name      = "FIDES__REDIS__PASSWORD"
