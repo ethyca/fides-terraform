@@ -14,14 +14,14 @@ locals {
     },
     {
       name  = "FIDES__DATABASE__PORT"
-      value = aws_db_instance.postgres.port
+      value = tostring(aws_db_instance.postgres.port)
     },
     {
       name  = "FIDES__DATABASE__DB"
       value = aws_db_instance.postgres.db_name
     },
     {
-      name  = "FIDES__DATABASE__USERNAME"
+      name  = "FIDES__DATABASE__USER"
       value = aws_db_instance.postgres.username
     },
     {
@@ -31,6 +31,14 @@ locals {
     {
       name  = "FIDES__REDIS__HOST"
       value = aws_elasticache_replication_group.fides_redis.primary_endpoint_address
+    },
+    {
+      name  = "FIDES__REDIS__SSL"
+      value = "true"
+    },
+    {
+      name  = "FIDES__REDIS__SSL_CERT_REQS"
+      value = "none"
     },
     {
       name  = "FIDES__EXECUTION__SUBJECT_IDENTITY_VERIFICATION_REQUIRED"
@@ -43,6 +51,10 @@ locals {
     {
       name  = "FIDES__SECURITY__ROOT_USERNAME"
       value = var.fides_root_user
+    },
+    {
+      name  = "CELERY_TASK_ALWAYS_EAGER"
+      value = "true"
     }
   ]
   container_def = [
@@ -69,9 +81,8 @@ locals {
 
       secrets = [
         {
-          # Need to use the connection string format to pass in the sslMode parameter.
           name      = "FIDES__DATABASE__PASSWORD"
-          valueFrom = aws_ssm_parameter.postgres_password
+          valueFrom = aws_ssm_parameter.postgres_password.arn
         },
         {
           name      = "FIDES__REDIS__PASSWORD"
@@ -95,7 +106,7 @@ locals {
         }
       ]
 
-      environment = local.environment_variables
+      environment = concat(local.environment_variables, var.fides_additional_environment_variables)
     }
   ]
 }
@@ -110,14 +121,7 @@ data "aws_iam_policy_document" "ecs_task_policy" {
       "ssm:GetParameter"
     ]
 
-    resources = [
-      aws_ssm_parameter.postgres_connection_string.arn,
-      aws_ssm_parameter.redis_auth_token.arn,
-      aws_ssm_parameter.fides_oauth_client_secret.arn,
-      aws_ssm_parameter.fides_oauth_client_id.arn,
-      aws_ssm_parameter.fides_encryption_key.arn,
-      aws_ssm_parameter.fides_root_password.arn
-    ]
+    resources = local.container_def[0].secrets[*].valueFrom
   }
 
   statement {
