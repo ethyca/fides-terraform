@@ -1,3 +1,16 @@
+# Fides Outputs
+
+output "fides_root_username" {
+  description = "The root Fides user's username."
+  value       = var.fides_root_user
+}
+
+output "fides_root_password" {
+  description = "The root Fides user's password."
+  value       = var.fides_root_user
+  sensitive   = true
+}
+
 # Load Balancer Outputs
 
 output "fides_endpoint" {
