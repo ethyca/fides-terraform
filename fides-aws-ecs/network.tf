@@ -48,6 +48,16 @@ resource "aws_security_group" "fides_sg" {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
+    cidr_blocks = [data.aws_subnet.primary.cidr_block, data.aws_subnet.alternate.cidr_block]
+    self        = true
+  }
+
+  ingress {
+    description = "allow redis"
+    from_port   = 6379
+    to_port     = 6379
+    protocol    = "tcp"
+    cidr_blocks = [data.aws_subnet.primary.cidr_block, data.aws_subnet.alternate.cidr_block]
     self        = true
   }
 
