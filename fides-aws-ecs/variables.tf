@@ -135,7 +135,7 @@ variable "fides_image" {
 variable "fides_version" {
   description = "The Fides Version to deploy. Must be a valid Docker tag."
   type        = string
-  default     = "2.1.0"
+  default     = "2.2.1"
 }
 
 variable "fides_cpu" {
