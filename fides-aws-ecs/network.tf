@@ -36,9 +36,25 @@ resource "aws_security_group" "fides_sg" {
   vpc_id      = local.vpc_id
 
   ingress {
-    description = "allow inbound fides traffic"
+    description = "allow inbound fides and privacy center traffic"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = var.allowed_ips
+  }
+
+  ingress {
+    description = "allow inbound fides and privacy center traffic"
     from_port   = 8080
     to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = var.allowed_ips
+  }
+
+  ingress {
+    description = "allow inbound fides and privacy center traffic"
+    from_port   = 3000
+    to_port     = 3000
     protocol    = "tcp"
     cidr_blocks = var.allowed_ips
   }

@@ -18,6 +18,11 @@ output "fides_endpoint" {
   value       = aws_lb.fides_lb.dns_name
 }
 
+output "privacy_center_endpoint" {
+  description = "The DNS name of the Privacy Center load balancer."
+  value       = aws_lb.privacy_center_lb.dns_name
+}
+
 # Database Outputs
 
 output "postgres_endpoint" {
@@ -33,11 +38,11 @@ output "rds_arn" {
 # Redis Outputs
 
 output "redis_endpoint" {
-  description = "The primary enpoint for the Fides Redis instance."
+  description = "The primary endpoint for the Fides Redis instance."
   value       = aws_elasticache_replication_group.fides_redis.primary_endpoint_address
 }
 
 output "elasticache_arn" {
-  description = "The primary enpoint for the Fides Redis instance."
+  description = "The primary endpoint for the Fides Redis instance."
   value       = aws_elasticache_replication_group.fides_redis.arn
 }

@@ -18,6 +18,12 @@ resource "random_password" "fides_oauth_client_secret" {
   override_special = "!&#$^<>-"
 }
 
+resource "random_password" "fides_drp_jwt_secret" {
+  length           = 32
+  special          = true
+  override_special = "+/"
+}
+
 resource "random_password" "fides_root_password" {
   length           = 24
   special          = true
@@ -52,6 +58,13 @@ resource "aws_ssm_parameter" "fides_oauth_client_secret" {
   value       = random_password.fides_oauth_client_secret.result
 }
 
+resource "aws_ssm_parameter" "fides_drp_jwt_secret" {
+  name        = "${local.ssm_prefix}/fides/drpjwt"
+  description = "The encryption key used to generate DRP JWTs."
+  type        = "SecureString"
+  value       = random_password.fides_drp_jwt_secret.result
+}
+
 # Redis Secrets
 
 resource "random_password" "redis_auth_token" {
@@ -82,9 +95,3 @@ resource "aws_ssm_parameter" "postgres_password" {
   value       = random_password.postgres_main.result
 }
 
-resource "aws_ssm_parameter" "postgres_connection_string" {
-  name        = "${local.ssm_prefix}/database/connection_string"
-  description = "The connection string for the Fides ${var.environment_name} Postgres database"
-  type        = "SecureString"
-  value       = "postgresql://${aws_db_instance.postgres.username}:${random_password.postgres_main.result}@${aws_db_instance.postgres.address}:${tostring(aws_db_instance.postgres.port)}/${aws_db_instance.postgres.db_name}?sslmode=require"
-}

@@ -1,4 +1,4 @@
-# Application Load Balancer for Ingress to ECS Fargate
+# Application Load Balancer for Ingress to Fides
 resource "aws_lb" "fides_lb" {
   name               = coalesce(var.lb_name, "fides-${var.environment_name}")
   internal           = false
@@ -18,7 +18,7 @@ resource "aws_lb" "fides_lb" {
 
 resource "aws_lb_target_group" "fides" {
   name        = "fides-${var.environment_name}"
-  port        = local.container_def[0].portMappings[0].containerPort
+  port        = local.container_def[0].portMappings[0].hostPort
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = local.vpc_id
@@ -26,7 +26,7 @@ resource "aws_lb_target_group" "fides" {
   health_check {
     path                = "/health"
     protocol            = "HTTP"
-    port                = local.container_def[0].portMappings[0].containerPort
+    port                = local.container_def[0].portMappings[0].hostPort
     matcher             = "200-299"
     interval            = 30
     unhealthy_threshold = 5
@@ -35,7 +35,7 @@ resource "aws_lb_target_group" "fides" {
 
 resource "aws_lb_listener" "fides" {
   load_balancer_arn = aws_lb.fides_lb.arn
-  port              = "8080"
+  port              = "80"
   protocol          = "HTTP"
 
   default_action {

@@ -25,6 +25,10 @@ locals {
       value = aws_db_instance.postgres.username
     },
     {
+      name  = "FIDES__DATABASE__ENABLED"
+      value = "True"
+    },
+    {
       name  = "FIDES__REDIS__PORT"
       value = tostring(aws_elasticache_replication_group.fides_redis.port)
     },
@@ -41,6 +45,14 @@ locals {
       value = "none"
     },
     {
+      name  = "FIDES__REDIS__DB_INDEX"
+      value = "0"
+    },
+    {
+      name  = "FIDES__REDIS__ENABLED"
+      value = "True"
+    },
+    {
       name  = "FIDES__EXECUTION__SUBJECT_IDENTITY_VERIFICATION_REQUIRED"
       value = tostring(var.fides_identity_verification)
     },
@@ -53,8 +65,12 @@ locals {
       value = var.fides_root_user
     },
     {
-      name  = "CELERY_TASK_ALWAYS_EAGER"
-      value = "true"
+      name = "FIDES__SECURITY__CORS_ORIGINS"
+      value = chomp(
+        <<-CORS
+          ["http://${aws_lb.fides_lb.dns_name}", "http://${aws_lb.privacy_center_lb.dns_name}"]
+        CORS
+      )
     }
   ]
   container_def = [
@@ -64,6 +80,7 @@ locals {
       cpu       = var.fides_cpu
       memory    = var.fides_memory
       essential = true
+
       portMappings = [
         {
           containerPort = 8080
@@ -91,6 +108,10 @@ locals {
         {
           name      = "FIDES__SECURITY__APP_ENCRYPTION_KEY"
           valueFrom = aws_ssm_parameter.fides_encryption_key.arn
+        },
+        {
+          name      = "FIDES__SECURITY__DRP_JWT_SECRET"
+          valueFrom = aws_ssm_parameter.fides_drp_jwt_secret.arn
         },
         {
           name      = "FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID"
@@ -138,17 +159,6 @@ data "aws_iam_policy_document" "ecs_task_policy" {
   }
 }
 
-data "aws_iam_policy_document" "ecs_task_assume_role" {
-  statement {
-    actions = ["sts:AssumeRole"]
-
-    principals {
-      type        = "Service"
-      identifiers = ["ecs-tasks.amazonaws.com"]
-    }
-  }
-}
-
 resource "aws_iam_policy" "ecs_task_policy" {
   name   = "fides-${var.environment_name}-policy"
   policy = data.aws_iam_policy_document.ecs_task_policy.json
@@ -158,15 +168,6 @@ resource "aws_iam_role" "ecs_role" {
   name                = "fides-${var.environment_name}-role"
   assume_role_policy  = data.aws_iam_policy_document.ecs_task_assume_role.json
   managed_policy_arns = [aws_iam_policy.ecs_task_policy.arn]
-}
-
-resource "aws_ecs_cluster" "fides" {
-  name = "fides-${var.environment_name}"
-
-  setting {
-    name  = "containerInsights"
-    value = "enabled"
-  }
 }
 
 resource "aws_ecs_service" "fides" {

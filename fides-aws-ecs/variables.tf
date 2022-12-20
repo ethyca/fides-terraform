@@ -11,6 +11,30 @@ variable "environment_name" {
   }
 }
 
+variable "fides_image" {
+  description = "The Fides Docker image to deploy."
+  type        = string
+  default     = "ethyca/fides"
+}
+
+variable "fides_version" {
+  description = "The Fides version to deploy. Must be a valid Docker tag."
+  type        = string
+  default     = "2.3.1"
+}
+
+variable "privacy_center_image" {
+  description = "The Fides Docker image to deploy."
+  type        = string
+  default     = "ethyca/fides-privacy-center"
+}
+
+variable "privacy_center_version" {
+  description = "The Privacy Center version to deploy. Must be a valid Docker tag."
+  type        = string
+  default     = "2.3.1"
+}
+
 # AWS Networking
 
 variable "aws_region" {
@@ -124,24 +148,41 @@ variable "fides_additional_environment_variables" {
   }
 }
 
+# Privacy Center Configuration
+
+variable "privacy_center_configuration_file" {
+  description = "The file path of a config.json file with which to configure the Privacy Center."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.privacy_center_configuration_file != "" ? fileexists(var.privacy_center_configuration_file) : true
+    error_message = "no file found for the value of \"var.privacy_center_configuration_file\""
+  }
+
+  validation {
+    condition     = var.privacy_center_configuration_file != "" ? can(jsondecode(file(var.privacy_center_configuration_file))) : true
+    error_message = "the value of \"var.privacy_center_configuration_file\" must be valid JSON"
+  }
+}
+
+variable "privacy_center_css_file" {
+  description = "The file path of a config.css file with which to style the Privacy Center."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.privacy_center_css_file != "" ? fileexists(var.privacy_center_css_file) : true
+    error_message = "no file found for the value of \"var.privacy_center_css_file\""
+  }
+}
+
 # Fides Resources - ECS Fargate
-
-variable "fides_image" {
-  description = "The Fides Docker image to deploy."
-  type        = string
-  default     = "ethyca/fides"
-}
-
-variable "fides_version" {
-  description = "The Fides Version to deploy. Must be a valid Docker tag."
-  type        = string
-  default     = "2.2.1"
-}
 
 variable "fides_cpu" {
   description = "The number of CPU units to dedicate to the Fides container."
   type        = number
-  default     = 512
+  default     = 1024
 }
 
 variable "fides_memory" {
@@ -210,6 +251,20 @@ variable "ssm_parameter_prefix" {
   description = "The prefix for AWS SSM Parameter Store entries related to Fides."
   type        = string
   default     = "/fides"
+}
+
+# Privacy Center Resources - ECS Fargate
+
+variable "privacy_center_cpu" {
+  description = "The number of CPU units to dedicate to the Privacy Center container."
+  type        = number
+  default     = 512
+}
+
+variable "privacy_center_memory" {
+  description = "The amount of memory, in MiB, to dedicate to the Privacy Center container."
+  type        = number
+  default     = 1024
 }
 
 # Cloudwatch Logs
