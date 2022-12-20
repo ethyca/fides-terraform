@@ -25,6 +25,7 @@ resource "random_password" "fides_drp_jwt_secret" {
 }
 
 resource "random_password" "fides_root_password" {
+  count            = var.fides_root_password == "" ? 1 : 0
   length           = 24
   special          = true
   override_special = "!&#$^<>-"
@@ -34,7 +35,7 @@ resource "aws_ssm_parameter" "fides_root_password" {
   name        = "${local.ssm_prefix}/fides/root/password"
   description = "The password for the Fides root user."
   type        = "SecureString"
-  value       = random_password.fides_root_password.result
+  value       = coalesce(var.fides_root_password, random_password.fides_root_password[0].result)
 }
 
 resource "aws_ssm_parameter" "fides_encryption_key" {
