@@ -45,6 +45,14 @@ resource "aws_security_group" "fides_sg" {
 
   ingress {
     description = "allow inbound fides and privacy center traffic"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = var.allowed_ips
+  }
+
+  ingress {
+    description = "allow inbound fides and privacy center traffic"
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"

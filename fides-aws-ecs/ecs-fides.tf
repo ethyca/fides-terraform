@@ -66,9 +66,13 @@ locals {
     },
     {
       name = "FIDES__SECURITY__CORS_ORIGINS"
-      value = chomp(
+      value = local.use_custom_domain_names == 0 ? chomp(
         <<-CORS
           ["http://${aws_lb.fides_lb.dns_name}", "http://${aws_lb.privacy_center_lb.dns_name}"]
+        CORS
+        ) : chomp(
+        <<-CORS
+          ["https://${var.route53_config.fides_subdomain}", "https://${var.route53_config.privacy_center_subdomain}"]
         CORS
       )
     }

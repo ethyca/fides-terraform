@@ -63,6 +63,16 @@ variable "allowed_ips" {
   }
 }
 
+variable "route53_config" {
+  description = "Route53 DNS configuration for Fides and Privacy Center. Setting these values also creates a TLS certificate and serves traffic over port 443. In order to use these, you must have a hosted zone for the root domain."
+  type = object({
+    existing_hosted_zone_name = string # e.g. example.com
+    fides_subdomain           = string # e.g. fides.example.com
+    privacy_center_subdomain  = string # e.g. privacy.example.com
+  })
+  default = null
+}
+
 # Fides Configuration
 
 variable "fides_identity_verification" {

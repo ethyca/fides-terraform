@@ -44,6 +44,29 @@ resource "aws_lb_listener" "privacy_center" {
   }
 }
 
+resource "aws_lb_listener" "privacy_center_https" {
+  count             = local.use_custom_domain_names
+  load_balancer_arn = aws_lb.privacy_center_lb.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-Ext-2018-06" // TLS 1.2, see https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#tls-security-policies
+  certificate_arn   = aws_acm_certificate.privacy_center_cert[0].arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.privacy_center.arn
+  }
+
+  depends_on = [
+    aws_acm_certificate_validation.privacy_center_validation
+  ]
+}
+
+resource "aws_lb_listener_certificate" "privacy_center_cert" {
+  listener_arn    = aws_lb_listener.privacy_center_https[0].arn
+  certificate_arn = aws_acm_certificate_validation.privacy_center_validation[0].certificate_arn
+}
+
 resource "aws_lb_listener_rule" "privacy_center" {
   listener_arn = aws_lb_listener.privacy_center.arn
   priority     = 100
