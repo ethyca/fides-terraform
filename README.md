@@ -4,6 +4,7 @@ This repository contains reusuable modules and code examples to deploy [Fides](h
 
 ## Terraform Modules
 
+* [`fides-aws-ecs`](./terraform/fides-aws-ecs/) - deploy Fides on an ECS instance running Fargate
 
 ## :balance_scale: License
 The [Fides](https://github.com/ethyca/fides) ecosystem of tools are licensed under the [Apache Software License Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).

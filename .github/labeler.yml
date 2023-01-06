@@ -1,0 +1,8 @@
+terraform/fides-aws-ecs:
+  - "fides-aws-ecs/**/*"
+
+documentation:
+  - "**/*.md"
+
+ci/cd:
+  - ".github/**/*"
