@@ -1,12 +1,21 @@
 locals {
+  cors = compact(
+          distinct(
+              concat(
+            var.fides_additional_cors_origins,
+            [
+              "http://${aws_lb.fides_lb.dns_name}",
+              "http://${aws_lb.privacy_center_lb.dns_name}",
+              local.use_custom_domain_names == 1 ? "https://${var.route53_config.fides_subdomain}.${data.aws_route53_zone.primary_zone[0].name}" : "",
+              local.use_custom_domain_names == 1 ? "https://${var.route53_config.privacy_center_subdomain}.${data.aws_route53_zone.primary_zone[0].name}" : ""
+            ]
+          )
+        )
+      )
   environment_variables = [
     {
       name  = "FIDES__LOGGING__LEVEL"
       value = upper(var.fides_log_level)
-    },
-    {
-      name  = "FIDES__USER__ANALYTICS_OPT_OUT"
-      value = tostring(var.fides_analytics_opt_out)
     },
     {
       name  = "FIDES__DATABASE__SERVER"
@@ -65,16 +74,16 @@ locals {
       value = var.fides_root_user
     },
     {
-      name = "FIDES__SECURITY__CORS_ORIGINS"
-      value = local.use_custom_domain_names == 0 ? chomp(
-        <<-CORS
-          ["http://${aws_lb.fides_lb.dns_name}", "http://${aws_lb.privacy_center_lb.dns_name}"]
-        CORS
-        ) : chomp(
-        <<-CORS
-          ["https://${var.route53_config.fides_subdomain}", "https://${var.route53_config.privacy_center_subdomain}"]
-        CORS
-      )
+      name  = "FIDES__SECURITY__CORS_ORIGINS"
+      value = jsonencode(local.cors)
+    },
+    {
+      name  = "FIDES__SECURITY__CORS_ORIGIN_REGEX"
+      value = var.fides_cors_origin_regex
+    },
+    {
+      name  = "FIDES__SECURITY__ENV"
+      value = var.environment_type
     }
   ]
   container_def = [

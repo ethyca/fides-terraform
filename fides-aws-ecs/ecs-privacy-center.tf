@@ -1,4 +1,5 @@
 locals {
+  privacy_center_config_path = "/app/config"
   container_def_privacy_center = [
     {
       name      = "privacy-center"
@@ -10,10 +11,10 @@ locals {
       command = ["/bin/sh", "-c",
         <<-COMMAND
         apk add --no-cache aws-cli sudo \
-          && aws s3 cp s3://${aws_s3_bucket.privacy_center_config.bucket}/${aws_s3_object.config_json.id} /app/config/config.json \
-          && aws s3 cp s3://${aws_s3_bucket.privacy_center_config.bucket}/${aws_s3_object.config_css.id} /app/config/config.css \
+          && aws s3 cp s3://${aws_s3_bucket.privacy_center_config.bucket}/${aws_s3_object.config_json.id} ${local.privacy_center_config_path}/config.json \
+          && aws s3 cp s3://${aws_s3_bucket.privacy_center_config.bucket}/${aws_s3_object.config_css.id} ${local.privacy_center_config_path} \
           && npm config set color false \
-          && sudo -u nextjs ./start.sh
+          && npm run start
         COMMAND
       ]
       portMappings = [
@@ -26,6 +27,22 @@ locals {
         {
           name  = "NODE_DISABLE_COLORS"
           value = "1"
+        },
+        {
+          name  = "FIDES_PRIVACY_CENTER__FIDES_API_URL"
+          value = "https://${local.fides_url}/api/v1"
+        },
+        {
+          name  = "FIDES_PRIVACY_CENTER__PRIVACY_CENTER_URL"
+          value = "https://${local.privacy_center_url}"
+        },
+        {
+          name  = "FIDES_PRIVACY_CENTER__CONFIG_JSON_URL"
+          value = "file://${local.privacy_center_config_path}/config.json"
+        },
+        {
+          name  = "FIDES_PRIVACY_CENTER__CONFIG_JSON_CSS"
+          value = "file://${local.privacy_center_config_path}/config.css"
         }
       ]
       logConfiguration = {
