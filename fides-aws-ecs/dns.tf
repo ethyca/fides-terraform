@@ -1,5 +1,7 @@
 locals {
   use_custom_domain_names = var.route53_config == null ? 0 : 1
+  fides_url = local.use_custom_domain_names == 1 ? aws_route53_record.fides[0].name : aws_lb.fides_lb.dns_name
+  privacy_center_url = local.use_custom_domain_names == 1 ? aws_route53_record.privacy_center[0].name : aws_lb.privacy_center_lb.dns_name
 }
 
 data "aws_route53_zone" "primary_zone" {

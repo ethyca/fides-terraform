@@ -1,5 +1,5 @@
 locals {
-  config_json_content  = var.privacy_center_configuration_file == null ? file(var.privacy_center_configuration_file) : templatefile("${path.module}/config/privacyCenterConfig.json.tftpl", { fides_url = local.use_custom_domain_names == 1 ? "https://${var.route53_config.fides_subdomain}" : "http://${aws_lb.fides_lb.dns_name}" })
+  config_json_content  = var.privacy_center_configuration_file == null ? file(var.privacy_center_configuration_file) : file("${path.module}/config/privacyCenterConfig.json")
   config_css_file_path = coalesce(var.privacy_center_css_file, "${path.module}/config/privacyCenterConfig.css")
 }
 

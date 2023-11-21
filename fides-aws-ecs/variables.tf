@@ -11,6 +11,17 @@ variable "environment_name" {
   }
 }
 
+variable "environment_type" {
+  description = "The environment type, prod or dev"
+  type        = string
+  default     = "dev"
+
+  validation {
+    condition     = contains(["dev", "prod"], var.environment_type)
+    error_message = "Environment type must be either \"dev\" or \"prod\"."
+  }
+}
+
 variable "fides_image" {
   description = "The Fides Docker image to deploy."
   type        = string
@@ -20,7 +31,7 @@ variable "fides_image" {
 variable "fides_version" {
   description = "The Fides version to deploy. Must be a valid Docker tag."
   type        = string
-  default     = "2.3.1"
+  default     = "2.24.1"
 }
 
 variable "privacy_center_image" {
@@ -32,7 +43,7 @@ variable "privacy_center_image" {
 variable "privacy_center_version" {
   description = "The Privacy Center version to deploy. Must be a valid Docker tag."
   type        = string
-  default     = "2.3.1"
+  default     = "2.24.1"
 }
 
 # AWS Networking
@@ -70,7 +81,6 @@ variable "route53_config" {
     fides_subdomain           = string # e.g. fides.example.com
     privacy_center_subdomain  = string # e.g. privacy.example.com
   })
-  default = null
 }
 
 # Fides Configuration
@@ -116,10 +126,16 @@ variable "fides_log_level" {
   }
 }
 
-variable "fides_analytics_opt_out" {
-  description = "Whether to opt out of the collection of anonymous analtics."
-  type        = bool
-  default     = false
+variable "fides_additional_cors_origins" {
+  description = "A list of CORS origins besides the privacy center and Fides Admin UI to allow."
+  type        = list(string)
+  default     = []
+}
+
+variable "fides_cors_origin_regex" {
+  description = "A regex to use to allowlist CORS origins, in addition to the 'fides_additional_cors_origins' list. For example: 'https://.*\\.example\\.com'"
+  type        = string
+  default     = ""
 }
 
 variable "fides_additional_environment_variables" {
@@ -150,8 +166,7 @@ variable "fides_additional_environment_variables" {
         "FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID",
         "FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET",
         "FIDES__SECURITY__ROOT_PASSWORD",
-        "FIDES__SECURITY__ROOT_USERNAME",
-        "FIDES__USER__ANALYTICS_OPT_OUT"
+        "FIDES__SECURITY__ROOT_USERNAME"
       ], x.name)
     ])
     error_message = "cannot pass in that environment variable, reserved use"

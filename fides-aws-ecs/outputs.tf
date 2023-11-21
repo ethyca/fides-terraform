@@ -14,13 +14,13 @@ output "fides_root_password" {
 # Load Balancer Outputs
 
 output "fides_endpoint" {
-  description = "The DNS name of the Fides load balancer."
-  value       = aws_lb.fides_lb.dns_name
+  description = "The URL of the Fides load balancer."
+  value       = local.fides_url
 }
 
 output "privacy_center_endpoint" {
-  description = "The DNS name of the Privacy Center load balancer."
-  value       = aws_lb.privacy_center_lb.dns_name
+  description = "The URL of the Privacy Center load balancer."
+  value       = local.privacy_center_url
 }
 
 # Database Outputs
