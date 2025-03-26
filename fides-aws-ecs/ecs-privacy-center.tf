@@ -12,8 +12,7 @@ locals {
         apk add --no-cache aws-cli sudo \
           && aws s3 cp s3://${aws_s3_bucket.privacy_center_config.bucket}/${aws_s3_object.config_json.id} /app/config/config.json \
           && aws s3 cp s3://${aws_s3_bucket.privacy_center_config.bucket}/${aws_s3_object.config_css.id} /app/config/config.css \
-          && npm config set color false \
-          && sudo -u nextjs ./start.sh
+          && npm run start
         COMMAND
       ]
       portMappings = [
