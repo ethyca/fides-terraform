@@ -62,6 +62,11 @@ variable "fides_primary_subnet" {
 variable "fides_alternate_subnet" {
   description = "The subnet ID of the alternate subnet that may contain Fides resources. This subnet should be in a different availability zone from \"var.fides_primary_subnet\"."
   type        = string
+
+  validation {
+    condition     = var.fides_alternate_subnet != var.fides_primary_subnet
+    error_message = "The alternate subnet ID cannot match the primary subnet ID."
+  }
 }
 
 variable "allowed_ips" {

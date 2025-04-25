@@ -6,11 +6,6 @@ data "aws_subnet" "alternate" {
   id = var.fides_alternate_subnet
 
   lifecycle {
-    precondition {
-      condition     = var.fides_alternate_subnet != var.fides_primary_subnet
-      error_message = "id cannot match the id of the primary subnet."
-    }
-
     postcondition {
       condition     = self.availability_zone != data.aws_subnet.primary.availability_zone
       error_message = "availability_zone must differ from the availabilty_zone of the primary subnet."
