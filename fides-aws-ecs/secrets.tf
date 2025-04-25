@@ -66,6 +66,27 @@ resource "aws_ssm_parameter" "fides_drp_jwt_secret" {
   value       = random_password.fides_drp_jwt_secret.result
 }
 
+resource "aws_ssm_parameter" "fides_system_scanner_pixie_api_key" {
+  name        = "${local.ssm_prefix}/fides/systemscanner/pixieapikey"
+  description = "The API key for the Fides system scanner."
+  type        = "SecureString"
+  value       = var.fides_system_scanner.pixie_api_key
+}
+
+resource "aws_ssm_parameter" "fides_dictionary_api_key" {
+  name        = "${local.ssm_prefix}/fides/dictionary/apikey"
+  description = "The API key for the Fides dictionary."
+  type        = "SecureString"
+  value       = var.fides_dictionary_api_key
+}
+
+resource "aws_ssm_parameter" "fides_detection_and_discovery_website_monitor_api_key" {
+  name        = "${local.ssm_prefix}/fides/detectionanddiscovery/websitemonitor/apikey"
+  description = "The API key for the Fides detection and discovery website monitor."
+  type        = "SecureString"
+  value       = var.fides_detection_and_discovery_website_monitor_api_key
+}
+
 # Redis Secrets
 
 resource "random_password" "redis_auth_token" {

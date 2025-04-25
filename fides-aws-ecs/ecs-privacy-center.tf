@@ -103,9 +103,13 @@ resource "aws_iam_policy" "ecs_task_policy_privacy_center" {
 }
 
 resource "aws_iam_role" "ecs_role_privacy_center" {
-  name                = "privacy_center-${var.environment_name}-role"
-  assume_role_policy  = data.aws_iam_policy_document.ecs_task_assume_role.json
-  managed_policy_arns = [aws_iam_policy.ecs_task_policy_privacy_center.arn]
+  name               = "privacy_center-${var.environment_name}-role"
+  assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "privacy_center_policy_attachment" {
+  role       = aws_iam_role.ecs_role_privacy_center.name
+  policy_arn = aws_iam_policy.ecs_task_policy_privacy_center.arn
 }
 
 resource "aws_ecs_service" "privacy_center" {
