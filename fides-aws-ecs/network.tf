@@ -28,7 +28,7 @@ locals {
 }
 
 resource "aws_eip" "fides_eip" {
-  vpc = true
+  domain = "vpc"
 }
 
 resource "aws_security_group" "fides_sg" {
