@@ -13,7 +13,6 @@ locals {
         apk add --no-cache aws-cli sudo \
           && aws s3 cp s3://${aws_s3_bucket.privacy_center_config.bucket}/${aws_s3_object.config_json.id} ${local.privacy_center_config_path}/config.json \
           && aws s3 cp s3://${aws_s3_bucket.privacy_center_config.bucket}/${aws_s3_object.config_css.id} ${local.privacy_center_config_path} \
-          && npm config set color false \
           && npm run start
         COMMAND
       ]
