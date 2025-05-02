@@ -59,7 +59,7 @@ locals {
 data "aws_iam_policy_document" "ecs_task_policy_privacy_center" {
 
   statement {
-    sid = "0"
+    sid = "LogWriteAccess"
 
     actions = [
       "logs:PutLogEvents",
@@ -67,12 +67,12 @@ data "aws_iam_policy_document" "ecs_task_policy_privacy_center" {
     ]
 
     resources = [
-      "${coalesce(var.cloudwatch_log_group, aws_cloudwatch_log_group.fides_ecs[0].arn)}*"
+      "${coalesce(var.cloudwatch_log_group, aws_cloudwatch_log_group.fides_ecs[0].arn)}:log-stream:${local.container_def_privacy_center[0].logConfiguration.options.awslogs-stream-prefix}*"
     ]
   }
 
   statement {
-    sid = "1"
+    sid = "S3ListAccess"
 
     actions = [
       "s3:ListBucket"
@@ -84,7 +84,7 @@ data "aws_iam_policy_document" "ecs_task_policy_privacy_center" {
   }
 
   statement {
-    sid = "2"
+    sid = "S3ObjectAccess"
 
     actions = [
       "s3:GetObject"
@@ -139,7 +139,7 @@ resource "aws_ecs_service" "privacy_center" {
 }
 
 resource "aws_ecs_task_definition" "privacy_center" {
-  family                   = "privacy_center_service"
+  family                   = "privacy_center"
   container_definitions    = jsonencode(local.container_def_privacy_center)
   execution_role_arn       = aws_iam_role.ecs_role_privacy_center.arn
   task_role_arn            = aws_iam_role.ecs_role_privacy_center.arn

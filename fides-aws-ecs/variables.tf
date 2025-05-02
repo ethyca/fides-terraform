@@ -398,8 +398,8 @@ variable "fides_detection_and_discovery_website_monitor_api_key" {
   sensitive   = true
 
   validation {
-    condition     = var.fides_detection_and_discovery_website.enabled && var.fides_detection_and_discovery_website_monitor_api_key != ""
-    error_message = "the value of \"var.fides_detection_and_discovery_website_monitor_api_key\" must not be empty if \"var.fides_detection_and_discovery_website.enabled\" is true"
+    condition     = var.fides_detection_and_discovery_website_monitor.enabled && var.fides_detection_and_discovery_website_monitor_api_key != ""
+    error_message = "the value of \"var.fides_detection_and_discovery_website_monitor_api_key\" must not be empty if \"var.fides_detection_and_discovery_website_monitor.enabled\" is true"
   }
 }
 

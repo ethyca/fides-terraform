@@ -1,3 +1,4 @@
+# This file has configuration and resources that are shared between the web server and the worker
 locals {
   fides_environment_variables = [
     {
@@ -174,6 +175,48 @@ locals {
     {
       name  = "FIDES__SECURITY__CONSENT_WEBHOOK_ACCESS_TOKEN_EXPIRE_MINUTES"
       value = tostring(var.fides_consent_webhook_access_token_expire_minutes)
+    }
+  ]
+  fides_secrets = [
+    {
+      name      = "FIDES__DATABASE__PASSWORD"
+      valueFrom = aws_ssm_parameter.postgres_password.arn
+    },
+    {
+      name      = "FIDES__REDIS__PASSWORD"
+      valueFrom = aws_ssm_parameter.redis_auth_token.arn
+    },
+    {
+      name      = "FIDES__SECURITY__APP_ENCRYPTION_KEY"
+      valueFrom = aws_ssm_parameter.fides_encryption_key.arn
+    },
+    {
+      name      = "FIDES__SECURITY__DRP_JWT_SECRET"
+      valueFrom = aws_ssm_parameter.fides_drp_jwt_secret.arn
+    },
+    {
+      name      = "FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID"
+      valueFrom = aws_ssm_parameter.fides_oauth_client_id.arn
+    },
+    {
+      name      = "FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET"
+      valueFrom = aws_ssm_parameter.fides_oauth_client_secret.arn
+    },
+    {
+      name      = "FIDES__SECURITY__ROOT_PASSWORD"
+      valueFrom = aws_ssm_parameter.fides_root_password.arn
+    },
+    {
+      name      = "FIDES__SYSTEM_SCANNER__PIXIE_API_KEY"
+      valueFrom = aws_ssm_parameter.fides_system_scanner_pixie_api_key.arn
+    },
+    {
+      name      = "FIDESPLUS__DICTIONARY__DICTIONARY_SERVICE_API_KEY"
+      valueFrom = aws_ssm_parameter.fides_dictionary_api_key.arn
+    },
+    {
+      name      = "FIDESPLUS__DETECTION_DISCOVERY__WEBSITE_MONITOR_SERVICE_API_KEY"
+      valueFrom = aws_ssm_parameter.fides_detection_and_discovery_website_monitor_api_key.arn
     }
   ]
 }
