@@ -98,18 +98,48 @@ data "aws_iam_policy_document" "ecs_task_policy_privacy_center" {
 }
 
 resource "aws_iam_policy" "ecs_task_policy_privacy_center" {
-  name   = "privacy-center-${var.environment_name}-policy"
+  name   = "privacy-center-${var.environment_name}-task-policy"
   policy = data.aws_iam_policy_document.ecs_task_policy_privacy_center.json
 }
 
-resource "aws_iam_role" "ecs_role_privacy_center" {
-  name               = "privacy_center-${var.environment_name}-role"
+data "aws_iam_policy_document" "ecs_execution_policy_privacy_center" {
+  statement {
+    sid = "LogCreateAccess"
+
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+
+    resources = [
+      "${coalesce(var.cloudwatch_log_group, aws_cloudwatch_log_group.fides_ecs[0].arn)}:*"
+    ]
+  }
+}
+
+resource "aws_iam_policy" "ecs_execution_policy_privacy_center" {
+  name   = "privacy-center-${var.environment_name}-execution-policy"
+  policy = data.aws_iam_policy_document.ecs_execution_policy_privacy_center.json
+}
+
+resource "aws_iam_role" "ecs_task_role_privacy_center" {
+  name               = "privacy_center-${var.environment_name}-task-role"
   assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role.json
 }
 
-resource "aws_iam_role_policy_attachment" "privacy_center_policy_attachment" {
-  role       = aws_iam_role.ecs_role_privacy_center.name
+resource "aws_iam_role" "ecs_execution_role_privacy_center" {
+  name               = "privacy_center-${var.environment_name}-execution-role"
+  assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "privacy_center_task_policy_attachment" {
+  role       = aws_iam_role.ecs_task_role_privacy_center.name
   policy_arn = aws_iam_policy.ecs_task_policy_privacy_center.arn
+}
+
+resource "aws_iam_role_policy_attachment" "privacy_center_execution_policy_attachment" {
+  role       = aws_iam_role.ecs_execution_role_privacy_center.name
+  policy_arn = aws_iam_policy.ecs_execution_policy_privacy_center.arn
 }
 
 resource "aws_ecs_service" "privacy_center" {
@@ -123,7 +153,7 @@ resource "aws_ecs_service" "privacy_center" {
 
   network_configuration {
     subnets          = [var.fides_primary_subnet]
-    security_groups  = [aws_security_group.fides_sg.id]
+    security_groups  = [aws_security_group.privacy_center_sg.id]
     assign_public_ip = true
   }
 
@@ -134,15 +164,16 @@ resource "aws_ecs_service" "privacy_center" {
   }
 
   depends_on = [
-    aws_iam_policy.ecs_task_policy_privacy_center
+    aws_iam_policy.ecs_task_policy_privacy_center,
+    aws_iam_policy.ecs_execution_policy_privacy_center
   ]
 }
 
 resource "aws_ecs_task_definition" "privacy_center" {
   family                   = "privacy_center"
   container_definitions    = jsonencode(local.container_def_privacy_center)
-  execution_role_arn       = aws_iam_role.ecs_role_privacy_center.arn
-  task_role_arn            = aws_iam_role.ecs_role_privacy_center.arn
+  execution_role_arn       = aws_iam_role.ecs_execution_role_privacy_center.arn
+  task_role_arn            = aws_iam_role.ecs_task_role_privacy_center.arn
   network_mode             = "awsvpc"
   cpu                      = var.privacy_center_cpu
   memory                   = var.privacy_center_memory

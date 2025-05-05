@@ -3,7 +3,7 @@ resource "aws_lb" "fides_lb" {
   name               = coalesce(var.lb_name, "fides-${var.environment_name}")
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.fides_sg.id]
+  security_groups    = [aws_security_group.alb_sg.id]
 
   enable_deletion_protection = false
 

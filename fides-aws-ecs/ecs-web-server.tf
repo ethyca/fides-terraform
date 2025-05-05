@@ -74,21 +74,79 @@ data "aws_iam_policy_document" "ecs_web_server_task_policy" {
       "${coalesce(var.cloudwatch_log_group, aws_cloudwatch_log_group.fides_ecs[0].arn)}:log-stream:${local.webserver_container_def[0].logConfiguration.options.awslogs-stream-prefix}*"
     ]
   }
+
+  statement {
+    sid = "S3DsrAccess"
+
+    actions = [
+      "s3:PutObject",
+      "s3:GetObject",
+      "s3:ListBucket",
+      "s3:DeleteObject"
+    ]
+
+    resources = [
+      aws_s3_bucket.dsr.arn,
+      "${aws_s3_bucket.dsr.arn}/*"
+    ]
+  }
 }
 
 resource "aws_iam_policy" "ecs_web_server_task_policy" {
-  name   = "fides-web-server-${var.environment_name}-policy"
+  name   = "fides-web-server-${var.environment_name}-task-policy"
   policy = data.aws_iam_policy_document.ecs_web_server_task_policy.json
 }
 
-resource "aws_iam_role" "ecs_web_server_role" {
-  name               = "fides-web-server-${var.environment_name}-role"
+data "aws_iam_policy_document" "ecs_web_server_execution_policy" {
+  statement {
+    sid = "SSMReadAccess"
+
+    actions = [
+      "ssm:GetParametersByPath",
+      "ssm:GetParameters",
+      "ssm:GetParameter"
+    ]
+
+    resources = local.webserver_container_def[0].secrets[*].valueFrom
+  }
+
+  statement {
+    sid = "LogCreateAccess"
+
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+
+    resources = [
+      "${coalesce(var.cloudwatch_log_group, aws_cloudwatch_log_group.fides_ecs[0].arn)}:*"
+    ]
+  }
+}
+
+resource "aws_iam_policy" "ecs_web_server_execution_policy" {
+  name   = "fides-web-server-${var.environment_name}-execution-policy"
+  policy = data.aws_iam_policy_document.ecs_web_server_execution_policy.json
+}
+
+resource "aws_iam_role" "ecs_web_server_task_role" {
+  name               = "fides-web-server-${var.environment_name}-task-role"
   assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role.json
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_web_server_role_policy_attachment" {
-  role       = aws_iam_role.ecs_web_server_role.name
+resource "aws_iam_role" "ecs_web_server_execution_role" {
+  name               = "fides-web-server-${var.environment_name}-execution-role"
+  assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_web_server_task_role_policy_attachment" {
+  role       = aws_iam_role.ecs_web_server_task_role.name
   policy_arn = aws_iam_policy.ecs_web_server_task_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_web_server_execution_role_policy_attachment" {
+  role       = aws_iam_role.ecs_web_server_execution_role.name
+  policy_arn = aws_iam_policy.ecs_web_server_execution_policy.arn
 }
 
 resource "aws_ecs_service" "fides_web_server" {
@@ -101,8 +159,12 @@ resource "aws_ecs_service" "fides_web_server" {
   force_new_deployment              = true
 
   network_configuration {
-    subnets          = [var.fides_primary_subnet]
-    security_groups  = [aws_security_group.fides_sg.id]
+    subnets = [var.fides_primary_subnet]
+    security_groups = [
+      aws_security_group.web_server_sg.id,
+      aws_security_group.db_sg.id,
+      aws_security_group.redis_sg.id
+    ]
     assign_public_ip = true
   }
 
@@ -113,14 +175,16 @@ resource "aws_ecs_service" "fides_web_server" {
   }
 
   depends_on = [
-    aws_iam_policy.ecs_web_server_task_policy
+    aws_iam_policy.ecs_web_server_task_policy,
+    aws_iam_policy.ecs_web_server_execution_policy
   ]
 }
 
 resource "aws_ecs_task_definition" "fides_web_server" {
   family                   = "fides_web_server"
   container_definitions    = jsonencode(local.webserver_container_def)
-  execution_role_arn       = aws_iam_role.ecs_web_server_role.arn
+  execution_role_arn       = aws_iam_role.ecs_web_server_execution_role.arn
+  task_role_arn            = aws_iam_role.ecs_web_server_task_role.arn
   network_mode             = "awsvpc"
   cpu                      = var.fides_cpu
   memory                   = var.fides_memory

@@ -10,7 +10,7 @@ resource "aws_elasticache_replication_group" "fides_redis" {
   preferred_cache_cluster_azs = [data.aws_subnet.primary.availability_zone]
   replication_group_id        = "rep-group-1-fides-${var.environment_name}"
   subnet_group_name           = aws_elasticache_subnet_group.fides_redis.name
-  security_group_ids          = [aws_security_group.fides_sg.id]
+  security_group_ids          = [aws_security_group.redis_sg.id]
   description                 = "fides redis replication group"
   node_type                   = var.elasticache_node_type
   num_cache_clusters          = 1
