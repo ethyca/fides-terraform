@@ -88,6 +88,7 @@ variable "route53_config" {
     fides_subdomain           = string # e.g. fides.example.com
     privacy_center_subdomain  = string # e.g. privacy.example.com
   })
+  default = null
 
   validation {
     condition     = var.route53_config.fides_subdomain != "" && var.route53_config.privacy_center_subdomain != "" && var.route53_config.existing_hosted_zone_name != ""
@@ -103,6 +104,18 @@ variable "route53_config" {
     condition     = startswith(var.route53_config.privacy_center_subdomain, var.route53_config.existing_hosted_zone_name)
     error_message = "the value of \"var.route53_config.privacy_center_subdomain\" must be a subdomain of \"var.route53_config.existing_hosted_zone_name\"."
   }
+}
+
+variable "custom_domain" {
+  description = "Custom domain name to use for the CloudFront distribution"
+  type        = string
+  default     = ""
+}
+
+variable "custom_domain_points_to_cdn" {
+  description = "Whether the custom domain points to the CloudFront distribution. If true, the custom domain will be added as an alias to the CloudFront distribution."
+  type        = bool
+  default     = false
 }
 
 # Fides Configuration
