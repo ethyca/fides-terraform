@@ -704,6 +704,57 @@ variable "privacy_center_memory" {
   default     = 1024
 }
 
+variable "workers" {
+  description = "The configuration for the worker container."
+  type = list(object({
+    name           = string
+    queues         = optional(list(string))
+    exclude_queues = optional(list(string))
+    count          = optional(number, 1)
+    cpu            = number
+    memory         = number
+  }))
+  default = [
+    {
+      name   = "dsr"
+      queues = ["fides.dsr"]
+      cpu    = 1024
+      memory = 2048
+    },
+    {
+      name   = "privacy_preferences"
+      queues = ["fides.privacy_preferences"]
+      cpu    = 512
+      memory = 1024
+    },
+    {
+      name           = "other"
+      exclude_queues = ["fides.dsr", "fides.privacy_preferences"]
+      cpu            = 512
+      memory         = 1024
+  }]
+
+  validation {
+    condition     = alltrue([for w in var.workers : w.cpu > 0 && w.memory > 0])
+    error_message = "the cpu and memory values of \"var.workers\" must be greater than 0"
+  }
+
+  validation {
+    condition     = alltrue([for w in var.workers : w.queues != null && w.exclude_queues != null])
+    error_message = "the value of a given worker in \"var.workers\" must not contain both queues and exclude_queues"
+  }
+
+  validation {
+    condition     = length(var.workers) == length(distinct([for w in var.workers : w.name]))
+    error_message = "the names of workers in \"var.workers\" must be unique."
+  }
+
+  validation {
+    condition     = alltrue([for w in var.workers : can(regex("^[a-zA-Z0-9-]+$", w.name)) && length(w.name) >= 3])
+    error_message = "the names of workers in \"var.workers\" must contain only alphanumeric characters or dashes and must be at least 3 characters long"
+  }
+}
+
 # Cloudwatch Logs
 
 variable "cloudwatch_log_group" {

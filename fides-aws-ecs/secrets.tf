@@ -70,7 +70,7 @@ resource "aws_ssm_parameter" "fides_system_scanner_pixie_api_key" {
   name        = "${local.ssm_prefix}/fides/systemscanner/pixieapikey"
   description = "The API key for the Fides system scanner."
   type        = "SecureString"
-  value       = var.fides_system_scanner.pixie_api_key
+  value       = var.fides_system_scanner_pixie_api_key
 }
 
 resource "aws_ssm_parameter" "fides_dictionary_api_key" {

@@ -90,6 +90,11 @@ resource "aws_iam_role_policy_attachment" "ecs_web_server_role_policy_attachment
   policy_arn = aws_iam_policy.ecs_web_server_task_policy.arn
 }
 
+resource "aws_iam_role_policy_attachment" "ecs_role_policy_attachment" {
+  role       = aws_iam_role.ecs_role.name
+  policy_arn = aws_iam_policy.ecs_web_server_task_policy.arn
+}
+
 resource "aws_ecs_service" "fides_web_server" {
   name                              = "fides-web-server-${var.environment_name}"
   cluster                           = aws_ecs_cluster.fides.id
