@@ -33,6 +33,7 @@ locals {
           hostPort      = 8080
         }
       ]
+
       logConfiguration = {
         logDriver = "awslogs",
         options = {
@@ -82,16 +83,11 @@ resource "aws_iam_policy" "ecs_web_server_task_policy" {
 
 resource "aws_iam_role" "ecs_web_server_role" {
   name               = "fides-web-server-${var.environment_name}-role"
-  assume_role_policy = data.aws_iam_policy_document.ecs_web_server_assume_role.json
+  assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role.json
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_web_server_role_policy_attachment" {
   role       = aws_iam_role.ecs_web_server_role.name
-  policy_arn = aws_iam_policy.ecs_web_server_task_policy.arn
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_role_policy_attachment" {
-  role       = aws_iam_role.ecs_role.name
   policy_arn = aws_iam_policy.ecs_web_server_task_policy.arn
 }
 
