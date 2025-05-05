@@ -383,6 +383,7 @@ variable "fides_consent_translations" {
     enable_oob_translations      = optional(bool, false) # Enables translations on out-of-the-box Experiences and Notices.
     enable_auto_tcf_translations = optional(bool, false) # Enables automatic (server-side) translations of the minimal TCF experience response to the user's preferred language based on the Accept-Language header. WARNING: this can significantly decrease cache hit ratios and reduce performance.
   })
+  default = {}
 }
 
 variable "fides_consent_webhook_access_token_expire_minutes" {
@@ -427,6 +428,7 @@ variable "fides_system_scanner" {
     use_encryption         = optional(bool, false)
     pixie_cloud_server_url = optional(string, "work.getcosmic.ai")
   })
+  default = {}
 }
 variable "fides_system_scanner_pixie_api_key" {
   description = "The API key for the Pixie system scanner."
