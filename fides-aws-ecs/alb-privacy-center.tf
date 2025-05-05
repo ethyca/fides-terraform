@@ -7,6 +7,13 @@ resource "aws_lb" "privacy_center_lb" {
 
   enable_deletion_protection = false
 
+  # Enable access logs
+  access_logs {
+    bucket  = aws_s3_bucket.alb_logs.bucket
+    prefix  = "privacy-center-lb"
+    enabled = true
+  }
+
   subnet_mapping {
     subnet_id = var.fides_primary_subnet
   }

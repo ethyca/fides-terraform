@@ -636,6 +636,13 @@ variable "lb_name" {
   default     = ""
 }
 
+# S3 Buckets
+
+variable "s3_bucket_name_prefix" {
+  description = "The prefix for all S3 buckets to ensure a globally unique name."
+  type        = string
+}
+
 # Postgres
 
 variable "rds_name" {
@@ -767,4 +774,16 @@ variable "cloudwatch_log_group" {
   description = "The ARN of the CloudWatch Logs group to use. If not specified, one will be created."
   type        = string
   default     = ""
+}
+
+# ALB Access Logs
+variable "alb_logs_retention_days" {
+  description = "Number of days to retain ALB access logs"
+  type        = number
+  default     = 90
+
+  validation {
+    condition     = var.alb_logs_retention_days >= 1
+    error_message = "ALB logs retention days must be at least 1"
+  }
 }

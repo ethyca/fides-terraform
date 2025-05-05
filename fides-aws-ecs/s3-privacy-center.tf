@@ -4,7 +4,7 @@ locals {
 }
 
 resource "aws_s3_bucket" "privacy_center_config" {
-  bucket = "fides-privacy-center-config-${var.environment_name}"
+  bucket = "${var.s3_bucket_name_prefix}-privacy-center-config-${var.environment_name}"
 
   tags = {
     Name = "Fides Privacy Center Configuration - ${title(var.environment_name)}"
