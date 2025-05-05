@@ -650,6 +650,12 @@ variable "rds_postgres_version" {
   default     = "14.17"
 }
 
+variable "rds_apply_immediately" {
+  description = "Apply RDS changes immediately."
+  type        = bool
+  default     = false
+}
+
 variable "rds_multi_az" {
   description = "Configure RDS to use a multi-AZ deployment."
   type        = bool
