@@ -410,6 +410,7 @@ variable "fides_detection_and_discovery_website_monitor_api_key" {
   description = "The API key for the website monitor."
   type        = string
   sensitive   = true
+  default     = ""
 
   validation {
     condition     = var.fides_detection_and_discovery_website_monitor.enabled && var.fides_detection_and_discovery_website_monitor_api_key != ""
@@ -430,10 +431,12 @@ variable "fides_system_scanner" {
   })
   default = {}
 }
+
 variable "fides_system_scanner_pixie_api_key" {
   description = "The API key for the Pixie system scanner."
   type        = string
   sensitive   = true
+  default     = ""
 
   validation {
     condition     = var.fides_system_scanner.enabled && var.fides_system_scanner_pixie_api_key != ""
@@ -450,6 +453,7 @@ variable "fides_celery" {
     event_queue_prefix = optional(string, "fides_worker")
     task_default_queue = optional(string, "fides")
   })
+  default = {}
 }
 
 # Fides Dictionary Configuration
@@ -468,6 +472,7 @@ variable "fides_dictionary_api_key" {
   description = "The API key for the dictionary service."
   type        = string
   sensitive   = true
+  default     = ""
 
   validation {
     condition     = var.fides_dictionary.enabled && var.fides_dictionary_api_key != ""
