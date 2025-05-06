@@ -6,8 +6,8 @@ locals {
         [
           "http://${aws_lb.fides_lb.dns_name}",
           "http://${aws_lb.privacy_center_lb.dns_name}",
-          local.use_custom_domain_names == 1 ? "https://${var.route53_config.fides_subdomain}.${data.aws_route53_zone.primary_zone[0].name}" : "",
-          local.use_custom_domain_names == 1 ? "https://${var.route53_config.privacy_center_subdomain}.${data.aws_route53_zone.primary_zone[0].name}" : ""
+          local.use_custom_domain_names == 1 ? "https://${var.route53_config.fides_subdomain}" : "",
+          local.use_custom_domain_names == 1 ? "https://${var.route53_config.privacy_center_subdomain}" : ""
         ]
       )
     )
@@ -19,38 +19,46 @@ locals {
     }
   ]
 
-  webserver_container_def = [
-    {
-      name      = "fides-web-server"
-      image     = "${var.fides_image}:${var.fides_version}"
-      cpu       = var.fides_cpu
-      memory    = var.fides_memory
-      essential = true
+  # Base container definition without repositoryCredentials
+  webserver_container_def = {
+    name      = "fides-web-server"
+    image     = "${var.fides_image}:${var.fides_version}"
+    cpu       = var.fides_cpu
+    memory    = var.fides_memory
+    essential = true
 
-      portMappings = [
-        {
-          containerPort = 8080
-          hostPort      = 8080
-        }
-      ]
-
-      repositoryCredentials = var.docker_credentials.username != "" && var.docker_credentials.password != "" ? {
-        credentialsParameter = aws_ssm_parameter.docker_credentials[0].arn
-      } : null
-
-      logConfiguration = {
-        logDriver = "awslogs",
-        options = {
-          awslogs-group         = coalesce(var.cloudwatch_log_group, aws_cloudwatch_log_group.fides_ecs[0].name),
-          awslogs-region        = data.aws_region.current.name,
-          awslogs-stream-prefix = "fides-web-server-${var.environment_name}"
-        }
+    portMappings = [
+      {
+        containerPort = 8080
+        hostPort      = 8080
       }
+    ]
 
-      secrets     = local.fides_secrets
-      environment = concat(local.fides_environment_variables, local.web_server_environment_variables, var.fides_additional_environment_variables)
+    logConfiguration = {
+      logDriver = "awslogs",
+      options = {
+        awslogs-group         = coalesce(var.cloudwatch_log_group, aws_cloudwatch_log_group.fides_ecs[0].name),
+        awslogs-region        = data.aws_region.current.name,
+        awslogs-stream-prefix = "fides-web-server-${var.environment_name}"
+      }
     }
-  ]
+
+    secrets     = local.fides_secrets
+    environment = concat(local.fides_environment_variables, local.web_server_environment_variables, var.fides_additional_environment_variables)
+  }
+
+  # Conditionally generate container definition JSON string with or without repositoryCredentials
+  webserver_container_json = var.docker_credentials.username != "" && var.docker_credentials.password != "" ? (
+    jsonencode(
+      [
+        merge(local.webserver_container_def, {
+          repositoryCredentials = {
+            credentialsParameter = aws_secretsmanager_secret.docker_credentials[0].arn
+          }
+        })
+      ]
+    )
+  ) : jsonencode([local.webserver_container_def])
 }
 
 data "aws_iam_policy_document" "ecs_web_server_task_policy" {
@@ -63,7 +71,7 @@ data "aws_iam_policy_document" "ecs_web_server_task_policy" {
       "ssm:GetParameter"
     ]
 
-    resources = local.webserver_container_def[0].secrets[*].valueFrom
+    resources = local.webserver_container_def.secrets[*].valueFrom
   }
 
   statement {
@@ -75,7 +83,7 @@ data "aws_iam_policy_document" "ecs_web_server_task_policy" {
     ]
 
     resources = [
-      "${coalesce(var.cloudwatch_log_group, aws_cloudwatch_log_group.fides_ecs[0].arn)}:log-stream:${local.webserver_container_def[0].logConfiguration.options.awslogs-stream-prefix}*"
+      "${coalesce(var.cloudwatch_log_group, aws_cloudwatch_log_group.fides_ecs[0].arn)}:log-stream:${local.webserver_container_def.logConfiguration.options.awslogs-stream-prefix}*"
     ]
   }
 
@@ -112,7 +120,7 @@ data "aws_iam_policy_document" "ecs_web_server_execution_policy" {
     ]
 
     resources = concat(
-      local.webserver_container_def[0].secrets[*].valueFrom,
+      local.webserver_container_def.secrets[*].valueFrom,
       var.docker_credentials.username != "" && var.docker_credentials.password != "" ? [aws_ssm_parameter.docker_credentials[0].arn] : []
     )
   }
@@ -128,6 +136,21 @@ data "aws_iam_policy_document" "ecs_web_server_execution_policy" {
     resources = [
       "${coalesce(var.cloudwatch_log_group, aws_cloudwatch_log_group.fides_ecs[0].arn)}:*"
     ]
+  }
+
+  dynamic "statement" {
+    for_each = var.docker_credentials.username != "" && var.docker_credentials.password != "" ? [1] : []
+    content {
+      sid = "SecretsManagerReadAccess"
+
+      actions = [
+        "secretsmanager:GetSecretValue"
+      ]
+
+      resources = [
+        aws_secretsmanager_secret.docker_credentials[0].arn
+      ]
+    }
   }
 }
 
@@ -177,8 +200,8 @@ resource "aws_ecs_service" "fides_web_server" {
 
   load_balancer {
     target_group_arn = aws_lb_target_group.fides.arn
-    container_name   = local.webserver_container_def[0].name
-    container_port   = local.webserver_container_def[0].portMappings[0].containerPort
+    container_name   = local.webserver_container_def.name
+    container_port   = local.webserver_container_def.portMappings[0].containerPort
   }
 
   depends_on = [
@@ -189,7 +212,7 @@ resource "aws_ecs_service" "fides_web_server" {
 
 resource "aws_ecs_task_definition" "fides_web_server" {
   family                   = "fides_web_server"
-  container_definitions    = jsonencode(local.webserver_container_def)
+  container_definitions    = local.webserver_container_json
   execution_role_arn       = aws_iam_role.ecs_web_server_execution_role.arn
   task_role_arn            = aws_iam_role.ecs_web_server_task_role.arn
   network_mode             = "awsvpc"

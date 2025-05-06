@@ -25,7 +25,7 @@ resource "aws_lb" "privacy_center_lb" {
 
 resource "aws_lb_target_group" "privacy_center" {
   name        = "privacy-center-${var.environment_name}"
-  port        = local.container_def_privacy_center[0].portMappings[0].hostPort
+  port        = local.privacy_center_container_def.portMappings[0].hostPort
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = local.vpc_id
@@ -33,7 +33,7 @@ resource "aws_lb_target_group" "privacy_center" {
   health_check {
     path                = "/"
     protocol            = "HTTP"
-    port                = local.container_def_privacy_center[0].portMappings[0].hostPort
+    port                = local.privacy_center_container_def.portMappings[0].hostPort
     matcher             = "200-299"
     interval            = 30
     unhealthy_threshold = 5

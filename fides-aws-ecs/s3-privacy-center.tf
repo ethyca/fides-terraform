@@ -11,9 +11,12 @@ resource "aws_s3_bucket" "privacy_center_config" {
   }
 }
 
-resource "aws_s3_bucket_acl" "privacy_center_config" {
+resource "aws_s3_bucket_ownership_controls" "privacy_center_config" {
   bucket = aws_s3_bucket.privacy_center_config.id
-  acl    = "private"
+
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
 }
 
 resource "aws_s3_object" "config_json" {
@@ -24,7 +27,7 @@ resource "aws_s3_object" "config_json" {
   etag         = md5(local.config_json_content)
 
   depends_on = [
-    aws_s3_bucket_acl.privacy_center_config
+    aws_s3_bucket_ownership_controls.privacy_center_config
   ]
 }
 
@@ -36,6 +39,6 @@ resource "aws_s3_object" "config_css" {
   etag         = filemd5(local.config_css_file_path)
 
   depends_on = [
-    aws_s3_bucket_acl.privacy_center_config
+    aws_s3_bucket_ownership_controls.privacy_center_config
   ]
 }

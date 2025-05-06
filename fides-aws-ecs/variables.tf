@@ -111,12 +111,12 @@ variable "route53_config" {
   }
 
   validation {
-    condition     = startswith(var.route53_config.fides_subdomain, var.route53_config.existing_hosted_zone_name)
+    condition     = endswith(var.route53_config.fides_subdomain, var.route53_config.existing_hosted_zone_name)
     error_message = "the value of \"var.route53_config.fides_subdomain\" must be a subdomain of \"var.route53_config.existing_hosted_zone_name\"."
   }
 
   validation {
-    condition     = startswith(var.route53_config.privacy_center_subdomain, var.route53_config.existing_hosted_zone_name)
+    condition     = endswith(var.route53_config.privacy_center_subdomain, var.route53_config.existing_hosted_zone_name)
     error_message = "the value of \"var.route53_config.privacy_center_subdomain\" must be a subdomain of \"var.route53_config.existing_hosted_zone_name\"."
   }
 }
@@ -428,7 +428,7 @@ variable "fides_detection_and_discovery_website_monitor_api_key" {
   default     = ""
 
   validation {
-    condition     = var.fides_detection_and_discovery_website_monitor.enabled && var.fides_detection_and_discovery_website_monitor_api_key != ""
+    condition     = !var.fides_detection_and_discovery_website_monitor.enabled || var.fides_detection_and_discovery_website_monitor_api_key != ""
     error_message = "the value of \"var.fides_detection_and_discovery_website_monitor_api_key\" must not be empty if \"var.fides_detection_and_discovery_website_monitor.enabled\" is true"
   }
 }
@@ -454,7 +454,7 @@ variable "fides_system_scanner_pixie_api_key" {
   default     = ""
 
   validation {
-    condition     = var.fides_system_scanner.enabled && var.fides_system_scanner_pixie_api_key != ""
+    condition     = !var.fides_system_scanner.enabled || var.fides_system_scanner_pixie_api_key != ""
     error_message = "the value of \"var.fides_system_scanner_pixie_api_key\" must not be empty if \"var.fides_system_scanner.enabled\" is true"
   }
 }
@@ -490,7 +490,7 @@ variable "fides_dictionary_api_key" {
   default     = ""
 
   validation {
-    condition     = var.fides_dictionary.enabled && var.fides_dictionary_api_key != ""
+    condition     = !var.fides_dictionary.enabled || var.fides_dictionary_api_key != ""
     error_message = "the value of \"var.fides_dictionary_api_key\" must not be empty if \"var.fides_dictionary.enabled\" is true"
   }
 }
@@ -788,7 +788,7 @@ variable "workers" {
   }
 
   validation {
-    condition     = alltrue([for w in var.workers : w.queues != null && w.exclude_queues != null])
+    condition     = alltrue([for w in var.workers : !(w.queues != null && w.exclude_queues != null)])
     error_message = "the value of a given worker in \"var.workers\" must not contain both queues and exclude_queues"
   }
 

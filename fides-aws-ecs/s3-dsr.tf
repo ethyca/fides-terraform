@@ -12,6 +12,15 @@ resource "aws_s3_bucket" "dsr" {
   }
 }
 
+# Set ownership controls for the DSR bucket
+resource "aws_s3_bucket_ownership_controls" "dsr" {
+  bucket = aws_s3_bucket.dsr.id
+
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
+}
+
 # Server side encryption for the DSR bucket
 resource "aws_s3_bucket_server_side_encryption_configuration" "dsr" {
   bucket = aws_s3_bucket.dsr.id

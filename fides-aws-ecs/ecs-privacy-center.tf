@@ -1,64 +1,72 @@
 locals {
   privacy_center_config_path = "/app/config"
-  container_def_privacy_center = [
-    {
-      name      = "privacy-center"
-      image     = "${var.privacy_center_image}:${var.privacy_center_version}"
-      cpu       = var.privacy_center_cpu
-      memory    = var.privacy_center_memory
-      essential = true
-      user      = "root"
-      command = ["/bin/sh", "-c",
-        <<-COMMAND
-        apk add --no-cache aws-cli sudo \
-          && aws s3 cp s3://${aws_s3_bucket.privacy_center_config.bucket}/${aws_s3_object.config_json.id} ${local.privacy_center_config_path}/config.json \
-          && aws s3 cp s3://${aws_s3_bucket.privacy_center_config.bucket}/${aws_s3_object.config_css.id} ${local.privacy_center_config_path} \
-          && npm run start
-        COMMAND
-      ]
-      portMappings = [
-        {
-          containerPort = 3000
-          hostPort      = 3000
-        }
-      ]
 
-      repositoryCredentials = var.docker_credentials.username != "" && var.docker_credentials.password != "" ? {
-        credentialsParameter = aws_ssm_parameter.docker_credentials[0].arn
-      } : null
-
-      environment = [
-        {
-          name  = "NODE_DISABLE_COLORS"
-          value = "1"
-        },
-        {
-          name  = "FIDES_PRIVACY_CENTER__FIDES_API_URL"
-          value = "https://${local.fides_url}/api/v1"
-        },
-        {
-          name  = "FIDES_PRIVACY_CENTER__PRIVACY_CENTER_URL"
-          value = "https://${local.privacy_center_url}"
-        },
-        {
-          name  = "FIDES_PRIVACY_CENTER__CONFIG_JSON_URL"
-          value = "file://${local.privacy_center_config_path}/config.json"
-        },
-        {
-          name  = "FIDES_PRIVACY_CENTER__CONFIG_JSON_CSS"
-          value = "file://${local.privacy_center_config_path}/config.css"
-        }
-      ]
-      logConfiguration = {
-        logDriver = "awslogs",
-        options = {
-          awslogs-group         = coalesce(var.cloudwatch_log_group, aws_cloudwatch_log_group.fides_ecs[0].name),
-          awslogs-region        = data.aws_region.current.name,
-          awslogs-stream-prefix = "privacy-center-${var.environment_name}-ecs"
-        }
+  # Base container definition without repositoryCredentials
+  privacy_center_container_def = {
+    name      = "privacy-center"
+    image     = "${var.privacy_center_image}:${var.privacy_center_version}"
+    cpu       = var.privacy_center_cpu
+    memory    = var.privacy_center_memory
+    essential = true
+    user      = "root"
+    command = ["/bin/sh", "-c",
+      <<-COMMAND
+      apk add --no-cache aws-cli sudo \
+        && aws s3 cp s3://${aws_s3_bucket.privacy_center_config.bucket}/${aws_s3_object.config_json.id} ${local.privacy_center_config_path}/config.json \
+        && aws s3 cp s3://${aws_s3_bucket.privacy_center_config.bucket}/${aws_s3_object.config_css.id} ${local.privacy_center_config_path} \
+        && npm run start
+      COMMAND
+    ]
+    portMappings = [
+      {
+        containerPort = 3000
+        hostPort      = 3000
+      }
+    ]
+    environment = [
+      {
+        name  = "NODE_DISABLE_COLORS"
+        value = "1"
+      },
+      {
+        name  = "FIDES_PRIVACY_CENTER__FIDES_API_URL"
+        value = "https://${local.fides_url}/api/v1"
+      },
+      {
+        name  = "FIDES_PRIVACY_CENTER__PRIVACY_CENTER_URL"
+        value = "https://${local.privacy_center_url}"
+      },
+      {
+        name  = "FIDES_PRIVACY_CENTER__CONFIG_JSON_URL"
+        value = "file://${local.privacy_center_config_path}/config.json"
+      },
+      {
+        name  = "FIDES_PRIVACY_CENTER__CONFIG_JSON_CSS"
+        value = "file://${local.privacy_center_config_path}/config.css"
+      }
+    ]
+    logConfiguration = {
+      logDriver = "awslogs",
+      options = {
+        awslogs-group         = coalesce(var.cloudwatch_log_group, aws_cloudwatch_log_group.fides_ecs[0].name),
+        awslogs-region        = data.aws_region.current.name,
+        awslogs-stream-prefix = "privacy-center-${var.environment_name}-ecs"
       }
     }
-  ]
+  }
+
+  # Conditionally generate container definition JSON string with or without repositoryCredentials
+  privacy_center_container_json = var.docker_credentials.username != "" && var.docker_credentials.password != "" ? (
+    jsonencode(
+      [
+        merge(local.privacy_center_container_def, {
+          repositoryCredentials = {
+            credentialsParameter = aws_secretsmanager_secret.docker_credentials[0].arn
+          }
+        })
+      ]
+    )
+  ) : jsonencode([local.privacy_center_container_def])
 }
 
 data "aws_iam_policy_document" "ecs_task_policy_privacy_center" {
@@ -72,7 +80,7 @@ data "aws_iam_policy_document" "ecs_task_policy_privacy_center" {
     ]
 
     resources = [
-      "${coalesce(var.cloudwatch_log_group, aws_cloudwatch_log_group.fides_ecs[0].arn)}:log-stream:${local.container_def_privacy_center[0].logConfiguration.options.awslogs-stream-prefix}*"
+      "${coalesce(var.cloudwatch_log_group, aws_cloudwatch_log_group.fides_ecs[0].arn)}:log-stream:${local.privacy_center_container_def.logConfiguration.options.awslogs-stream-prefix}*"
     ]
   }
 
@@ -137,6 +145,21 @@ data "aws_iam_policy_document" "ecs_execution_policy_privacy_center" {
       ]
     }
   }
+
+  dynamic "statement" {
+    for_each = var.docker_credentials.username != "" && var.docker_credentials.password != "" ? [1] : []
+    content {
+      sid = "SecretsManagerReadAccess"
+
+      actions = [
+        "secretsmanager:GetSecretValue"
+      ]
+
+      resources = [
+        aws_secretsmanager_secret.docker_credentials[0].arn
+      ]
+    }
+  }
 }
 
 resource "aws_iam_policy" "ecs_execution_policy_privacy_center" {
@@ -181,8 +204,8 @@ resource "aws_ecs_service" "privacy_center" {
 
   load_balancer {
     target_group_arn = aws_lb_target_group.privacy_center.arn
-    container_name   = local.container_def_privacy_center[0].name
-    container_port   = local.container_def_privacy_center[0].portMappings[0].hostPort
+    container_name   = local.privacy_center_container_def.name
+    container_port   = local.privacy_center_container_def.portMappings[0].containerPort
   }
 
   depends_on = [
@@ -193,7 +216,7 @@ resource "aws_ecs_service" "privacy_center" {
 
 resource "aws_ecs_task_definition" "privacy_center" {
   family                   = "privacy_center"
-  container_definitions    = jsonencode(local.container_def_privacy_center)
+  container_definitions    = local.privacy_center_container_json
   execution_role_arn       = aws_iam_role.ecs_execution_role_privacy_center.arn
   task_role_arn            = aws_iam_role.ecs_task_role_privacy_center.arn
   network_mode             = "awsvpc"

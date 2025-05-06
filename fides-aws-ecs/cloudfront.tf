@@ -117,7 +117,7 @@ resource "aws_cloudfront_distribution" "privacy_center_distribution" {
     custom_origin_config {
       http_port              = 80
       https_port             = 443
-      origin_protocol_policy = "https-only"
+      origin_protocol_policy = "http-only"
       origin_ssl_protocols   = ["TLSv1.2"]
     }
   }
@@ -179,7 +179,7 @@ resource "aws_cloudfront_distribution" "fides_distribution" {
 
   aliases = compact([
     local.fides_domain,
-    var.custom_domain_points_to_cdn ? var.custom_domain : ""
+    !var.custom_domain_points_to_cdn ? var.custom_domain : ""
   ])
 
   default_cache_behavior {

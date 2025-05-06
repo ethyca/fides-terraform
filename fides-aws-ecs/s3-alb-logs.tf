@@ -12,6 +12,16 @@ resource "aws_s3_bucket" "alb_logs" {
   }
 }
 
+# Set ownership controls for the ALB logs bucket
+# Using BucketOwnerPreferred since ALB logs delivery needs to set ACLs
+resource "aws_s3_bucket_ownership_controls" "alb_logs" {
+  bucket = aws_s3_bucket.alb_logs.id
+
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
+
 # Server side encryption for the logs bucket
 resource "aws_s3_bucket_server_side_encryption_configuration" "alb_logs" {
   bucket = aws_s3_bucket.alb_logs.id

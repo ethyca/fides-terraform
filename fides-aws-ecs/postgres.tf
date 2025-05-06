@@ -33,7 +33,7 @@ data "aws_iam_policy_document" "rds_enhanced_monitoring" {
 }
 
 resource "aws_db_instance" "postgres" {
-  db_name           = coalesce(var.rds_name, "fidesdb${title(var.environment_name)}")
+  db_name           = coalesce(var.rds_name, "fidesdb${replace(title(var.environment_name), "-", "")}")
   apply_immediately = var.rds_apply_immediately
 
   engine                     = "postgres"

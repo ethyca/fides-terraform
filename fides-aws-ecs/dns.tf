@@ -21,6 +21,8 @@ resource "aws_acm_certificate" "privacy_center_cloudfront" {
   provider          = aws.us_east_1
   domain_name       = local.privacy_center_domain
   validation_method = "DNS"
+
+  subject_alternative_names = var.custom_domain_points_to_cdn && var.custom_domain != "" ? [var.custom_domain] : []
 }
 
 resource "aws_route53_record" "privacy_center_cloudfront_validations" {
@@ -52,6 +54,8 @@ resource "aws_acm_certificate" "fides_cloudfront" {
   provider          = aws.us_east_1
   domain_name       = local.fides_domain
   validation_method = "DNS"
+
+  subject_alternative_names = var.custom_domain_points_to_cdn && var.custom_domain != "" ? [var.custom_domain] : []
 }
 
 resource "aws_route53_record" "fides_cloudfront_validations" {

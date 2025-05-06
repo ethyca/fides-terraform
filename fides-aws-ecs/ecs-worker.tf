@@ -6,8 +6,9 @@ locals {
     }
   ]
 
-  worker_container_def = [
-    for w in var.workers : {
+  # Create a map of worker name to container definition
+  worker_container_defs = { for idx, w in var.workers :
+    w.name => {
       name  = "fides-worker-${w.name}"
       image = "${var.fides_image}:${var.fides_version}"
 
@@ -23,10 +24,6 @@ locals {
 
       portMappings = []
 
-      repositoryCredentials = var.docker_credentials.username != "" && var.docker_credentials.password != "" ? {
-        credentialsParameter = aws_ssm_parameter.docker_credentials[0].arn
-      } : null
-
       logConfiguration = {
         logDriver = "awslogs",
         options = {
@@ -39,7 +36,22 @@ locals {
       secrets     = local.fides_secrets
       environment = concat(local.fides_environment_variables, var.fides_additional_environment_variables)
     }
-  ]
+  }
+
+  # Generate container definition JSON strings for each worker
+  worker_container_json = { for name, container in local.worker_container_defs :
+    name => var.docker_credentials.username != "" && var.docker_credentials.password != "" ? (
+      jsonencode(
+        [
+          merge(container, {
+            repositoryCredentials = {
+              credentialsParameter = aws_secretsmanager_secret.docker_credentials[0].arn
+            }
+          })
+        ]
+      )
+    ) : jsonencode([container])
+  }
 }
 
 data "aws_iam_policy_document" "ecs_worker_task_policy" {
@@ -54,7 +66,9 @@ data "aws_iam_policy_document" "ecs_worker_task_policy" {
       "ssm:GetParameter"
     ]
 
-    resources = [for w in local.worker_container_def : w.secrets[*].valueFrom]
+    resources = flatten([
+      for secret in local.fides_secrets : secret.valueFrom
+    ])
   }
 
   statement {
@@ -68,9 +82,7 @@ data "aws_iam_policy_document" "ecs_worker_task_policy" {
     resources = [
       "${
         coalesce(var.cloudwatch_log_group, aws_cloudwatch_log_group.fides_ecs[0].arn)
-        }:log-stream:${
-        [for w in local.worker_container_def : w.logConfiguration.options.awslogs-stream-prefix][index(var.workers, each.value)]
-      }*"
+      }:log-stream:fides-worker-${each.value.name}-${var.environment_name}*"
     ]
   }
 
@@ -110,7 +122,7 @@ data "aws_iam_policy_document" "ecs_worker_execution_policy" {
     ]
 
     resources = concat(
-      [for w in local.worker_container_def : w.secrets[*].valueFrom][0],
+      local.worker_container_defs[each.key].secrets[*].valueFrom,
       var.docker_credentials.username != "" && var.docker_credentials.password != "" ? [aws_ssm_parameter.docker_credentials[0].arn] : []
     )
   }
@@ -126,6 +138,21 @@ data "aws_iam_policy_document" "ecs_worker_execution_policy" {
     resources = [
       "${coalesce(var.cloudwatch_log_group, aws_cloudwatch_log_group.fides_ecs[0].arn)}:*"
     ]
+  }
+
+  dynamic "statement" {
+    for_each = var.docker_credentials.username != "" && var.docker_credentials.password != "" ? [1] : []
+    content {
+      sid = "SecretsManagerReadAccess"
+
+      actions = [
+        "secretsmanager:GetSecretValue"
+      ]
+
+      resources = [
+        aws_secretsmanager_secret.docker_credentials[0].arn
+      ]
+    }
   }
 }
 
@@ -188,7 +215,7 @@ resource "aws_ecs_service" "fides_worker" {
 resource "aws_ecs_task_definition" "fides_worker" {
   for_each                 = { for w in var.workers : w.name => w }
   family                   = "fides_worker_${each.value.name}"
-  container_definitions    = jsonencode(local.worker_container_def)
+  container_definitions    = local.worker_container_json[each.key]
   execution_role_arn       = aws_iam_role.ecs_worker_execution_role[each.key].arn
   task_role_arn            = aws_iam_role.ecs_worker_task_role[each.key].arn
   network_mode             = "awsvpc"
