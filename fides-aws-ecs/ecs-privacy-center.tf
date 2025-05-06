@@ -22,6 +22,11 @@ locals {
           hostPort      = 3000
         }
       ]
+
+      repositoryCredentials = var.docker_credentials.username != "" && var.docker_credentials.password != "" ? {
+        credentialsParameter = aws_ssm_parameter.docker_credentials[0].arn
+      } : null
+
       environment = [
         {
           name  = "NODE_DISABLE_COLORS"
@@ -114,6 +119,23 @@ data "aws_iam_policy_document" "ecs_execution_policy_privacy_center" {
     resources = [
       "${coalesce(var.cloudwatch_log_group, aws_cloudwatch_log_group.fides_ecs[0].arn)}:*"
     ]
+  }
+
+  dynamic "statement" {
+    for_each = var.docker_credentials.username != "" && var.docker_credentials.password != "" ? [1] : []
+    content {
+      sid = "SSMReadAccess"
+
+      actions = [
+        "ssm:GetParametersByPath",
+        "ssm:GetParameters",
+        "ssm:GetParameter"
+      ]
+
+      resources = [
+        aws_ssm_parameter.docker_credentials[0].arn
+      ]
+    }
   }
 }
 

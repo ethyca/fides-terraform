@@ -34,6 +34,21 @@ variable "fides_version" {
   default     = "2.60.0"
 }
 
+variable "docker_credentials" {
+  description = "Docker Hub credentials configuration for private images. If username and password are provided, private images will be used."
+  type = object({
+    username = string
+    password = string
+    registry = string
+  })
+  default = {
+    username = ""
+    password = ""
+    registry = "docker.io"
+  }
+  sensitive = true
+}
+
 variable "privacy_center_image" {
   description = "The Fides Docker image to deploy."
   type        = string

@@ -117,3 +117,22 @@ resource "aws_ssm_parameter" "postgres_password" {
   value       = random_password.postgres_main.result
 }
 
+# Docker registry credentials
+resource "aws_ssm_parameter" "docker_credentials" {
+  count = var.docker_credentials.username != "" && var.docker_credentials.password != "" ? 1 : 0
+
+  name        = "${var.ssm_parameter_prefix}/${var.environment_name}/docker-registry-credentials"
+  description = "Docker registry credentials"
+  type        = "SecureString"
+  value = jsonencode({
+    username = var.docker_credentials.username
+    password = var.docker_credentials.password
+    registry = var.docker_credentials.registry
+  })
+
+  tags = {
+    Environment = var.environment_name
+    Resource    = "Fides"
+  }
+}
+

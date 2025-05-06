@@ -23,6 +23,10 @@ locals {
 
       portMappings = []
 
+      repositoryCredentials = var.docker_credentials.username != "" && var.docker_credentials.password != "" ? {
+        credentialsParameter = aws_ssm_parameter.docker_credentials[0].arn
+      } : null
+
       logConfiguration = {
         logDriver = "awslogs",
         options = {
@@ -105,7 +109,10 @@ data "aws_iam_policy_document" "ecs_worker_execution_policy" {
       "ssm:GetParameter"
     ]
 
-    resources = [for w in local.worker_container_def : w.secrets[*].valueFrom]
+    resources = concat(
+      [for w in local.worker_container_def : w.secrets[*].valueFrom][0],
+      var.docker_credentials.username != "" && var.docker_credentials.password != "" ? [aws_ssm_parameter.docker_credentials[0].arn] : []
+    )
   }
 
   statement {
