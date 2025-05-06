@@ -9,7 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- First-class terraform variables to control more of Fides' configuration
+### Changed
+
+### Fixed
+
+## [1.0.0]
+
+This change introduces a number of breaking changes and new functionality. Most notably, the configuration of Fides is now done through terraform variables, rather than through arbitrary environment variables. Additionally, the module now supports Fides workers and adds a Cloudfront distribution for caching resources.
+
+If you are upgrading from a previous version of this module, be sure to review your `terraform plan` output for any forced replacements and monitor your deployment logs for any issues.
+
+### Added
+
+- Breaking: First-class terraform variables to control more of Fides' configuration
 - Support for private Docker image access
 - Cloudfront for Fides and the Privacy Center
 - Access logging and additional buckets, including a DSR bucket
@@ -22,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved variable validation
 - Improved security group configuration
 - Removed reference to fidesops
-- Deprecated EIP attribute
+- Fix deprecated EIP attribute
 
 ### Added
 
