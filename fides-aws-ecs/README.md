@@ -25,13 +25,7 @@ module "fides_aws_ecs" {
   fides_identity_verification           = false
   fides_require_manual_request_approval = true
   fides_log_level                       = "<Logging level>" # Valid values include DEBUG, INFO, WARNING, ERROR, and CRITICAL
-
-  # Optional: Configure private Docker image access
-  docker_credentials = {
-    username = "your-dockerhub-username"
-    password = "your-dockerhub-token"
-    registry = "docker.io"  # Default is docker.io
-  }
+  ...
 }
 ```
 
