@@ -70,7 +70,7 @@ variable "fides_alternate_subnet" {
 }
 
 variable "allowed_ips" {
-  description = "A list of IP addresses/ranges that are allowed to make inbound requests to the Fidesops API."
+  description = "A list of IP addresses/ranges that are allowed to make inbound requests to the Fides API."
   type        = list(string)
 
   validation {
