@@ -770,7 +770,7 @@ variable "workers" {
       memory = 2048
     },
     {
-      name   = "privacy_preferences"
+      name   = "privacy-preferences"
       queues = ["fides.privacy_preferences"]
       cpu    = 512
       memory = 1024
