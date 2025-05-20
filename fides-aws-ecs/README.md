@@ -6,7 +6,7 @@ This Terraform module creates an instance of [`fides`](./helm-charts/fides/) on 
 
 ### Prerequisites
 
-Before calling this module, you should have a Virtual Private Cloud (VPC) with two subnets in separate availability zones.
+Before calling this module, you should have a Virtual Private Cloud (VPC) with two subnets in separate availability zones and a hosted zone in Route 53.
 
 ### How to call this module
 
