@@ -10,6 +10,7 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 10 # Prevent long-running jobs
     permissions:
       contents: write
     steps:
@@ -40,8 +41,8 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
 
-          # Array to store created tags as JSON
-          CREATED_TAGS_JSON="[]"
+          # Initialize empty arrays for created tags
+          CREATED_TAGS=()
 
           # Process each changed version.json file
           for VERSION_FILE in ${{ steps.changed-files.outputs.changed_files }}; do
@@ -82,29 +83,34 @@ jobs:
             echo "Creating tag: $TAG_NAME"
             if git tag -a "$TAG_NAME" -m "Release $MODULE version $VERSION" && git push origin "$TAG_NAME"; then
               echo "Tagged $MODULE with version $VERSION"
-              
-              # Add to the JSON array of created tags
-              CREATED_TAGS_JSON=$(echo $CREATED_TAGS_JSON | jq --arg tag "$TAG_NAME" '. += [$tag]')
+              CREATED_TAGS+=("$TAG_NAME")
             else
               echo "Error creating or pushing tag $TAG_NAME"
             fi
           done
 
-          # Check if we created any tags
-          TAGS_COUNT=$(echo $CREATED_TAGS_JSON | jq 'length')
-          TAGS_CREATED=false
-          if [ "$TAGS_COUNT" -gt 0 ]; then
-            TAGS_CREATED=true
+          # Convert array to JSON and set outputs
+          if [ ${#CREATED_TAGS[@]} -gt 0 ]; then
+            CREATED_TAGS_JSON=$(printf '%s\n' "${CREATED_TAGS[@]}" | jq -R . | jq -s .)
+            echo "tags_created=true" >> $GITHUB_OUTPUT
+            echo "created_tags_json=$CREATED_TAGS_JSON" >> $GITHUB_OUTPUT
+            echo "Successfully created ${#CREATED_TAGS[@]} tag(s)"
+          else
+            echo "tags_created=false" >> $GITHUB_OUTPUT
+            echo "created_tags_json=[]" >> $GITHUB_OUTPUT
+            echo "No new tags were created"
           fi
 
-          # Set output variables for next steps
-          echo "tags_created=$TAGS_CREATED" >> $GITHUB_OUTPUT
-          echo "created_tags_json=$CREATED_TAGS_JSON" >> $GITHUB_OUTPUT
-
-          if [ "$TAGS_CREATED" = "true" ]; then
-            echo "Successfully created $TAGS_COUNT tag(s)"
-          else
-            echo "No new tags were created"
+      - name: Create summary
+        if: always()
+        run: |
+          echo "### Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "* Tags created: ${#CREATED_TAGS[@]}" >> $GITHUB_STEP_SUMMARY
+          if [ ${#CREATED_TAGS[@]} -gt 0 ]; then
+            echo "* Created tags:" >> $GITHUB_STEP_SUMMARY
+            for TAG in "${CREATED_TAGS[@]}"; do
+              echo "  - $TAG" >> $GITHUB_STEP_SUMMARY
+            done
           fi
 
       - name: Repository Dispatch
