@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [1.0.1]
+
+### Fixed
+
+- Fixed a release pipeline issue where tags were not being created
+
 ## [1.0.0]
 
 This change introduces a number of breaking changes and new functionality. Most notably, the configuration of Fides is now done through terraform variables, rather than through arbitrary environment variables. Additionally, the module now supports Fides workers and adds a Cloudfront distribution for caching resources.
