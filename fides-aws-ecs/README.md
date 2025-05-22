@@ -6,7 +6,7 @@ This Terraform module creates an instance of [`fides`](./helm-charts/fides/) on 
 
 ### Prerequisites
 
-Before calling this module, you should have a Virtual Private Cloud (VPC) with two subnets in separate availability zones.
+Before calling this module, you should have a Virtual Private Cloud (VPC) with two subnets in separate availability zones and a hosted zone in Route 53.
 
 ### How to call this module
 
@@ -25,5 +25,15 @@ module "fides_aws_ecs" {
   fides_identity_verification           = false
   fides_require_manual_request_approval = true
   fides_log_level                       = "<Logging level>" # Valid values include DEBUG, INFO, WARNING, ERROR, and CRITICAL
+  ...
 }
 ```
+
+### Private Docker Images
+
+This module supports using private Docker images from Docker Hub for both Fides and Privacy Center. To use private images:
+
+1. Simply provide your Docker Hub username and password
+2. Optionally specify a custom registry if not using Docker Hub
+
+The module will automatically detect when Docker credentials are provided and enable private registry access. If username or password is empty, public images will be used.

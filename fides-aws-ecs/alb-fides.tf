@@ -3,9 +3,16 @@ resource "aws_lb" "fides_lb" {
   name               = coalesce(var.lb_name, "fides-${var.environment_name}")
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.fides_sg.id]
+  security_groups    = [aws_security_group.alb_sg.id]
 
   enable_deletion_protection = false
+
+  # Enable access logs
+  access_logs {
+    bucket  = aws_s3_bucket.alb_logs.bucket
+    prefix  = "fides-lb"
+    enabled = true
+  }
 
   subnet_mapping {
     subnet_id = var.fides_primary_subnet
@@ -18,7 +25,7 @@ resource "aws_lb" "fides_lb" {
 
 resource "aws_lb_target_group" "fides" {
   name        = "fides-${var.environment_name}"
-  port        = local.container_def[0].portMappings[0].hostPort
+  port        = local.webserver_container_def.portMappings[0].hostPort
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = local.vpc_id
@@ -26,7 +33,7 @@ resource "aws_lb_target_group" "fides" {
   health_check {
     path                = "/health"
     protocol            = "HTTP"
-    port                = local.container_def[0].portMappings[0].hostPort
+    port                = local.webserver_container_def.portMappings[0].hostPort
     matcher             = "200-299"
     interval            = 30
     unhealthy_threshold = 5

@@ -1,19 +1,22 @@
 locals {
-  config_json_content  = var.privacy_center_configuration_file == null ? file(var.privacy_center_configuration_file) : templatefile("${path.module}/config/privacyCenterConfig.json.tftpl", { fides_url = local.use_custom_domain_names == 1 ? "https://${var.route53_config.fides_subdomain}" : "http://${aws_lb.fides_lb.dns_name}" })
+  config_json_content  = var.privacy_center_configuration_file == null ? file(var.privacy_center_configuration_file) : file("${path.module}/config/privacyCenterConfig.json")
   config_css_file_path = coalesce(var.privacy_center_css_file, "${path.module}/config/privacyCenterConfig.css")
 }
 
 resource "aws_s3_bucket" "privacy_center_config" {
-  bucket = "fides-privacy-center-config-${var.environment_name}"
+  bucket = "${var.s3_bucket_name_prefix}-privacy-center-config-${var.environment_name}"
 
   tags = {
     Name = "Fides Privacy Center Configuration - ${title(var.environment_name)}"
   }
 }
 
-resource "aws_s3_bucket_acl" "privacy_center_config" {
+resource "aws_s3_bucket_ownership_controls" "privacy_center_config" {
   bucket = aws_s3_bucket.privacy_center_config.id
-  acl    = "private"
+
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
 }
 
 resource "aws_s3_object" "config_json" {
@@ -24,7 +27,7 @@ resource "aws_s3_object" "config_json" {
   etag         = md5(local.config_json_content)
 
   depends_on = [
-    aws_s3_bucket_acl.privacy_center_config
+    aws_s3_bucket_ownership_controls.privacy_center_config
   ]
 }
 
@@ -36,6 +39,6 @@ resource "aws_s3_object" "config_css" {
   etag         = filemd5(local.config_css_file_path)
 
   depends_on = [
-    aws_s3_bucket_acl.privacy_center_config
+    aws_s3_bucket_ownership_controls.privacy_center_config
   ]
 }

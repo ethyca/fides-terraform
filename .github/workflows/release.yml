@@ -1,0 +1,117 @@
+name: Release Terraform Modules
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "*/version.json"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Needed to get all tags history
+
+      - name: Find changed version.json files
+        id: changed-files
+        run: |
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep 'version.json$' || true)
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No version.json files changed"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changed version files: $CHANGED_FILES"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+            echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Tag modules with updated versions
+        id: tagging
+        if: steps.changed-files.outputs.has_changes == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          # Array to store created tags as JSON
+          CREATED_TAGS_JSON="[]"
+
+          # Process each changed version.json file
+          for VERSION_FILE in ${{ steps.changed-files.outputs.changed_files }}; do
+            # Get the module directory from the path
+            MODULE_DIR=$(dirname "$VERSION_FILE")
+            
+            # Parse the version.json file
+            if [ ! -f "$VERSION_FILE" ]; then
+              echo "Warning: $VERSION_FILE no longer exists, skipping"
+              continue
+            fi
+            
+            # Validate JSON
+            if ! jq empty "$VERSION_FILE" 2>/dev/null; then
+              echo "Error: $VERSION_FILE is not valid JSON, skipping"
+              continue
+            fi
+            
+            MODULE=$(jq -r '.module' "$VERSION_FILE")
+            VERSION=$(jq -r '.version' "$VERSION_FILE")
+            
+            # Validate required fields
+            if [ "$MODULE" = "null" ] || [ -z "$MODULE" ] || [ "$VERSION" = "null" ] || [ -z "$VERSION" ]; then
+              echo "Error: $VERSION_FILE is missing required module or version fields, skipping"
+              continue
+            fi
+            
+            echo "Processing module: $MODULE (directory: $MODULE_DIR) with version: $VERSION"
+            
+            # Check if this tag already exists
+            TAG_NAME="${MODULE}/v${VERSION}"
+            if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+              echo "Tag $TAG_NAME already exists, skipping"
+              continue
+            fi
+            
+            # Create and push tag
+            echo "Creating tag: $TAG_NAME"
+            if git tag -a "$TAG_NAME" -m "Release $MODULE version $VERSION" && git push origin "$TAG_NAME"; then
+              echo "Tagged $MODULE with version $VERSION"
+              
+              # Add to the JSON array of created tags
+              CREATED_TAGS_JSON=$(echo $CREATED_TAGS_JSON | jq --arg tag "$TAG_NAME" '. += [$tag]')
+            else
+              echo "Error creating or pushing tag $TAG_NAME"
+            fi
+          done
+
+          # Check if we created any tags
+          TAGS_COUNT=$(echo $CREATED_TAGS_JSON | jq 'length')
+          TAGS_CREATED=false
+          if [ "$TAGS_COUNT" -gt 0 ]; then
+            TAGS_CREATED=true
+          fi
+
+          # Set output variables for next steps
+          echo "tags_created=$TAGS_CREATED" >> $GITHUB_OUTPUT
+          echo "created_tags_json=$CREATED_TAGS_JSON" >> $GITHUB_OUTPUT
+
+          if [ "$TAGS_CREATED" = "true" ]; then
+            echo "Successfully created $TAGS_COUNT tag(s)"
+          else
+            echo "No new tags were created"
+          fi
+
+      - name: Repository Dispatch
+        # This gets used to update the documentation.
+        if: steps.tagging.outputs.tags_created == 'true'
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: terraform-released
+          client-payload: '{"tags": ${{ steps.tagging.outputs.created_tags_json }}, "ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
