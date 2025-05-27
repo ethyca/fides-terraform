@@ -3,6 +3,7 @@ on:
   pull_request:
     paths-ignore:
       - "**.md"
+
 jobs:
   validate-versions:
     runs-on: ubuntu-latest
@@ -13,11 +14,11 @@ jobs:
           - "fides-aws-ecs"
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Required to get full history for comparing versions
+          # Required to get full history for comparing versions
+          fetch-depth: 0
 
-      # Extract version from version.json
       - name: Extract version from version.json
         id: extract-version
         run: |
@@ -26,7 +27,6 @@ jobs:
           VERSION=$(jq --raw-output '.version' "$VERSION_FILE")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      # Validate semantic version using a pre-built action
       - name: Validate semantic version
         uses: matt-usurp/validate-semver@v2
         with:
@@ -38,12 +38,18 @@ jobs:
       TF_IN_AUTOMATION: 1
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+
+      - name: Read Terraform version
+        id: terraform-version
+        run: echo "version=$(cat .terraform-version)" >> $GITHUB_OUTPUT
+
       - name: Setup Terraform
         id: tf-setup
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.11.4
+          terraform_version: ${{ steps.terraform-version.outputs.version }}
+
       - name: Check Terraform Formatting
         id: tf-fmt
         run: terraform fmt -check -recursive -no-color

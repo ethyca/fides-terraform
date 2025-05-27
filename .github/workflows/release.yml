@@ -19,6 +19,21 @@ jobs:
         with:
           fetch-depth: 0 # Needed to get all tags history
 
+      - name: Read Terraform version
+        id: terraform-version
+        run: echo "version=$(cat .terraform-version)" >> $GITHUB_OUTPUT
+
+      - name: Install Utilities
+        run: |
+          sudo apt-get update --quiet=2
+          sudo apt-get install --yes jo
+
+      - name: Setup Terraform
+        id: tf-setup
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ steps.terraform-version.outputs.version }}
+
       - name: Find changed version.json files
         id: changed-files
         run: |
@@ -91,7 +106,8 @@ jobs:
 
           # Convert array to JSON and set outputs
           if [ ${#CREATED_TAGS[@]} -gt 0 ]; then
-            CREATED_TAGS_JSON=$(printf '%s\n' "${CREATED_TAGS[@]}" | jq --raw-input . | jq --slurp .)
+            # `jo -a` creates an array of words
+            CREATED_TAGS_JSON=$(jo -a "${CREATED_TAGS[@]}")
             echo "tags_created=true" >> $GITHUB_OUTPUT
             echo "created_tags_json=$CREATED_TAGS_JSON" >> $GITHUB_OUTPUT
             echo "Successfully created ${#CREATED_TAGS[@]} tag(s)"

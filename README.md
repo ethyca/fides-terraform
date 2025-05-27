@@ -30,11 +30,19 @@ Note the double slash (`//`) in the source URL, which is required when referenci
 
 ## Development
 
+### Getting Started
+
+1. Clone the repository
+2. Install the Terraform version specified in the `.terraform-version` file
+   a. You can use `brew install tfenv` to install [`tfenv`](https://github.com/tfutils/tfenv) if you don't have it already.
+   b. You can use `tfenv use` to install the correct version.
+3. Run `terraform init` to install the correct version of Terraform providers
+
 ### Updating a Module
 
 1. Make your changes to the module
 2. Update the `version` field in the module's `version.json` file according to semantic versioning
-3. Create a PR and merge to main
+3. Create a PR and merge to the `main` branch
 4. The GitHub Actions workflow will automatically create a tag for the new version
 
 ### Module Structure
