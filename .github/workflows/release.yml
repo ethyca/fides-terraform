@@ -61,8 +61,8 @@ jobs:
               continue
             fi
             
-            MODULE=$(jq -r '.module' "$VERSION_FILE")
-            VERSION=$(jq -r '.version' "$VERSION_FILE")
+            MODULE=$(jq --raw-output '.module' "$VERSION_FILE")
+            VERSION=$(jq --raw-output '.version' "$VERSION_FILE")
             
             # Validate required fields
             if [ "$MODULE" = "null" ] || [ -z "$MODULE" ] || [ "$VERSION" = "null" ] || [ -z "$VERSION" ]; then
@@ -81,7 +81,7 @@ jobs:
             
             # Create and push tag
             echo "Creating tag: $TAG_NAME"
-            if git tag -a "$TAG_NAME" -m "Release $MODULE version $VERSION" && git push origin "$TAG_NAME"; then
+            if git tag --annotate "$TAG_NAME" --message "Release $MODULE version $VERSION" && git push origin "$TAG_NAME"; then
               echo "Tagged $MODULE with version $VERSION"
               CREATED_TAGS+=("$TAG_NAME")
             else
@@ -91,7 +91,7 @@ jobs:
 
           # Convert array to JSON and set outputs
           if [ ${#CREATED_TAGS[@]} -gt 0 ]; then
-            CREATED_TAGS_JSON=$(printf '%s\n' "${CREATED_TAGS[@]}" | jq -R . | jq -s .)
+            CREATED_TAGS_JSON=$(printf '%s\n' "${CREATED_TAGS[@]}" | jq --raw-input . | jq --slurp .)
             echo "tags_created=true" >> $GITHUB_OUTPUT
             echo "created_tags_json=$CREATED_TAGS_JSON" >> $GITHUB_OUTPUT
             echo "Successfully created ${#CREATED_TAGS[@]} tag(s)"
