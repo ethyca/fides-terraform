@@ -22,8 +22,8 @@ jobs:
         id: extract-version
         run: |
           VERSION_FILE="${{ matrix.module }}/version.json"
-          MODULE=$(jq -r '.module' "$VERSION_FILE")
-          VERSION=$(jq -r '.version' "$VERSION_FILE")
+          MODULE=$(jq --raw-output '.module' "$VERSION_FILE")
+          VERSION=$(jq --raw-output '.version' "$VERSION_FILE")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       # Validate semantic version using a pre-built action
