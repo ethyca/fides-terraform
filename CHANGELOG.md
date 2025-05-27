@@ -14,7 +14,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Fixed
 
-## [1.0.2]
+## [1.0.2] - 2025-05-27
 
 This release does not include changes to the Terraform module itself.
 
@@ -25,12 +25,13 @@ This release does not include changes to the Terraform module itself.
 ### Changed
 
 - Updated CI/CD pipeline to use latest dependencies
+- Update CHANGELOG to use Common Changelog format
 
 ### Fixed
 
 - Release pipeline issue after tag creation
 
-## [1.0.1]
+## [1.0.1] - 2025-05-27
 
 This release does not include changes to the Terraform module itself.
 
@@ -42,7 +43,7 @@ This release does not include changes to the Terraform module itself.
 
 - Fixed a release pipeline issue where tags were not being created
 
-## [1.0.0]
+## [1.0.0] - 2025-05-22
 
 This change introduces a number of breaking changes and new functionality. Most notably, the configuration of Fides is now done through terraform variables, rather than through arbitrary environment variables. Additionally, the module now supports Fides workers and adds a Cloudfront distribution for caching resources.
 
