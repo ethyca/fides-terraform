@@ -14,7 +14,7 @@ The following code sample illustrates a subset of the available variables. To se
 
 ```hcl
 module "fides_aws_ecs" {
-  source = "github.com/ethyca/fides-terraform//fides-aws-ecs"
+  source = "github.com/ethyca/fides-terraform//fides-aws-ecs?depth=1&ref=fides-aws-ecs/v1.0.1"
 
   environment_name = "production"
 
@@ -33,7 +33,7 @@ module "fides_aws_ecs" {
 
 This module supports using private Docker images from Docker Hub for both Fides and Privacy Center. To use private images:
 
-1. Simply provide your Docker Hub username and password
+1. Provide your Docker Hub username and password
 2. Optionally specify a custom registry if not using Docker Hub
 
 The module will automatically detect when Docker credentials are provided and enable private registry access. If username or password is empty, public images will be used.

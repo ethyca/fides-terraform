@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.1]
 
+This release does not include changes to the Terraform module itself.
+
+### Added
+
+- Migration guide for upgrading to v1
+
 ### Fixed
 
 - Fixed a release pipeline issue where tags were not being created
@@ -27,7 +33,7 @@ If you are upgrading from a previous version of this module, be sure to review y
 
 ### Added
 
-- Breaking: First-class terraform variables to control more of Fides' configuration
+- **Breaking:** First-class terraform variables to control more of Fides' configuration
 - Support for private Docker image access
 - Cloudfront for Fides and the Privacy Center
 - Access logging and additional buckets, including a DSR bucket
@@ -39,12 +45,8 @@ If you are upgrading from a previous version of this module, be sure to review y
 - Split out environment variables to be shared between worker & webserver
 - Improved variable validation
 - Improved security group configuration
-- Removed reference to fidesops
+- Removed reference to `fidesops`
 - Fix deprecated EIP attribute
-
-### Added
-
-### Fixed
 
 ## [0.0.2] - 2025-03-26
 
