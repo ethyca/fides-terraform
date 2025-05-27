@@ -160,3 +160,13 @@ Route53 A Record → CloudFront Distribution → Application Load Balancer → E
 2. **Certificate provisioning** - New ACM certificates will be created in us-east-1
 3. **Caching behavior** - Privacy Center responses may be cached (1-hour TTL)
 4. **Geographic distribution** - Traffic will be served from CloudFront edge locations
+
+## 4. Apply the Changes
+
+Be sure to thoroughly review your `terraform plan` output for any forced replacements and monitor your deployment logs for any issues.
+
+Apply the changes to your infrastructure using `terraform apply`.
+
+Monitor your deployment logs for any issues and ensure that your new CloudFront distributions are working as expected.
+
+This upgrade may incur downtime and should be performed during a maintenance window.
