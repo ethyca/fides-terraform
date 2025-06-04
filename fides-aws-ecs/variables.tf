@@ -106,17 +106,17 @@ variable "route53_config" {
   default = null
 
   validation {
-    condition     = var.route53_config.fides_subdomain != "" && var.route53_config.privacy_center_subdomain != "" && var.route53_config.existing_hosted_zone_name != ""
+    condition     = var.route53_config == null ? true : var.route53_config.fides_subdomain != "" && var.route53_config.privacy_center_subdomain != "" && var.route53_config.existing_hosted_zone_name != ""
     error_message = "the value of \"var.route53_config.fides_subdomain\" and \"var.route53_config.privacy_center_subdomain\" must not be empty."
   }
 
   validation {
-    condition     = endswith(var.route53_config.fides_subdomain, var.route53_config.existing_hosted_zone_name)
+    condition     = var.route53_config == null ? true : endswith(var.route53_config.fides_subdomain, var.route53_config.existing_hosted_zone_name)
     error_message = "the value of \"var.route53_config.fides_subdomain\" must be a subdomain of \"var.route53_config.existing_hosted_zone_name\"."
   }
 
   validation {
-    condition     = endswith(var.route53_config.privacy_center_subdomain, var.route53_config.existing_hosted_zone_name)
+    condition     = var.route53_config == null ? true : endswith(var.route53_config.privacy_center_subdomain, var.route53_config.existing_hosted_zone_name)
     error_message = "the value of \"var.route53_config.privacy_center_subdomain\" must be a subdomain of \"var.route53_config.existing_hosted_zone_name\"."
   }
 }
