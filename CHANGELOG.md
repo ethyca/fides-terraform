@@ -16,6 +16,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [1.0.2] - 2025-05-27
 
+### Fixed
+
+- Updated validation logic for route53_config to permit default value, allowing non-prod plans to pass without DNS configuration
+
+## [1.0.2] - 2025-05-27
+
 This release does not include changes to the Terraform module itself.
 
 ### Added
