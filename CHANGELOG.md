@@ -14,6 +14,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Fixed
 
+## [1.0.4] - 2025-09-10
+
+### Added
+
+- Added support for `FIDES__EXECUTION__USE_DSR_3.0`
+
 ## [1.0.3] - 2025-06-04
 
 ### Fixed
