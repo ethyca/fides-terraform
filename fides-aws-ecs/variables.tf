@@ -362,6 +362,12 @@ variable "fides_execution_interrupted_task_requeue_interval" {
   default     = 300
 }
 
+variable fides_execution_use_dsr_3_0 {
+  description = "Whether to use DSR 3.0."
+  type        = bool
+  default     = true
+}
+
 # Fides Consent Configuration
 # https://ethyca.com/docs/dev-docs/configuration/configuration#consent
 
