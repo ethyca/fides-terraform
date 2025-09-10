@@ -64,6 +64,10 @@ locals {
         value = var.fides_root_user
       },
       {
+        name = "FIDES__EXECUTION__USE_DSR_3.0"
+        value = tostring(var.fides_execution_use_dsr_3_0)
+      },
+      {
         name  = "FIDES__SECURITY__CORS_ORIGINS"
         value = jsonencode(local.cors)
       },
