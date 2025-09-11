@@ -61,6 +61,40 @@ variable "privacy_center_version" {
   default     = "2.60.0"
 }
 
+<<<<<<< Updated upstream
+=======
+variable "privacy_center_version" {
+  description = "The Privacy Center version to deploy. Must be a valid Docker tag."
+  type        = string
+  default     = "2.60.0"
+}
+
+variable "privacy_center_is_overlay_enabled" {
+  description = "Enable overlay mode for privacy center."
+  type        = bool
+  default     = true
+}
+
+variable "privacy_center_allow_html_description" {
+  description = "Allow HTML description in privacy center."
+  type        = bool
+  default     = false
+}
+
+variable "privacy_center_use_api_config" {
+  description = "Allow HTML description in privacy center."
+  type        = bool
+  default     = false
+}
+
+variable "privacy_center_root_property_path" {
+  description = "Allow HTML description in privacy center."
+  type        = bool
+  default     = null
+}
+
+
+>>>>>>> Stashed changes
 # AWS Networking
 
 variable "aws_region" {
