@@ -67,7 +67,7 @@ variable "privacy_center_version" {
   default     = "2.60.0"
 }
 
-variable "privacy_center_is_overlay_enabled {
+variable "privacy_center_is_overlay_enabled" {
   description = "Enable overlay mode for privacy center."
   type        = bool
   default     = true

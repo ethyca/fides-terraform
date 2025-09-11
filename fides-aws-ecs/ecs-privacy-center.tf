@@ -47,6 +47,10 @@ locals {
       {
         name  = "FIDES_PRIVACY_CENTER__ALLOW_HTML_DESCRIPTION"
         value = tostring(var.privacy_center_allow_html_description)
+      },
+      {
+        name  = "FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED"
+        value = tostring(var.privacy_center_is_overlay_enabled)
       }
     ]
     logConfiguration = {
