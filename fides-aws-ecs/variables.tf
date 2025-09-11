@@ -78,6 +78,18 @@ variable "privacy_center_allow_html_description" {
   type        = bool
   default     = false
 }
+variable "privacy_center_use_api_config" {
+  description = "Allow HTML description in privacy center."
+  type        = bool
+  default     = false
+}
+
+variable "privacy_center_root_property_path" {
+  description = "Allow HTML description in privacy center."
+  type        = bool
+  default     = null
+}
+
 
 # AWS Networking
 
