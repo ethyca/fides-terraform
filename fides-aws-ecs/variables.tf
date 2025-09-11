@@ -79,13 +79,13 @@ variable "privacy_center_allow_html_description" {
   default     = false
 }
 variable "privacy_center_use_api_config" {
-  description = "Allow HTML description in privacy center."
+  description = "Use API-based configuration instead of static files."
   type        = bool
   default     = false
 }
 
 variable "privacy_center_root_property_path" {
-  description = "Allow HTML description in privacy center."
+  description = "Root property path for privacy center."
   type        = bool
   default     = null
 }
