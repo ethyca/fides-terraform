@@ -86,8 +86,8 @@ variable "privacy_center_use_api_config" {
 
 variable "privacy_center_root_property_path" {
   description = "Root property path for privacy center."
-  type        = bool
-  default     = null
+  type        = string
+  default     = ""
 }
 
 
