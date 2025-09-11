@@ -14,11 +14,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Fixed
 
-## [1.0.4] - 2025-09-10
+## [1.0.4] - 2025-09-11
 
 ### Added
 
 - Added support for `FIDES__EXECUTION__USE_DSR_3.0`
+- Added support for `FIDES_PRIVACY_CENTER__ALLOW_HTML_DESCRIPTION`
+- Added support for `FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED`
 
 ## [1.0.3] - 2025-06-04
 
