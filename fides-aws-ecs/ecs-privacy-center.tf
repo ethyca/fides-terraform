@@ -43,6 +43,10 @@ locals {
       {
         name  = "FIDES_PRIVACY_CENTER__CONFIG_JSON_CSS"
         value = "file://${local.privacy_center_config_path}/config.css"
+      },
+      {
+        name  = "FIDES_PRIVACY_CENTER__ALLOW_HTML_DESCRIPTION"
+        value = tostring(var.privacy_center_allow_html_description)
       }
     ]
     logConfiguration = {

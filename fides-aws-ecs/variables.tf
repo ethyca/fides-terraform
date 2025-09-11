@@ -61,6 +61,24 @@ variable "privacy_center_version" {
   default     = "2.60.0"
 }
 
+variable "privacy_center_version" {
+  description = "The Privacy Center version to deploy. Must be a valid Docker tag."
+  type        = string
+  default     = "2.60.0"
+}
+
+variable "privacy_center_is_overlay_enabled {
+  description = "Enable overlay mode for privacy center."
+  type        = bool
+  default     = true
+}
+
+variable "privacy_center_allow_html_description" {
+  description = "Allow HTML description in privacy center."
+  type        = bool
+  default     = true
+}
+
 # AWS Networking
 
 variable "aws_region" {
@@ -363,9 +381,9 @@ variable "fides_execution_interrupted_task_requeue_interval" {
 }
 
 variable fides_execution_use_dsr_3_0 {
-  description = "Whether to use DSR 3.0."
+  description = "Whether to use DSR 3.0. Only applicable if using a Fides version <2.70.0."
   type        = bool
-  default     = true
+  default     = false
 }
 
 # Fides Consent Configuration
