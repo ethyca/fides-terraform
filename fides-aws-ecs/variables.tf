@@ -76,7 +76,7 @@ variable "privacy_center_is_overlay_enabled" {
 variable "privacy_center_allow_html_description" {
   description = "Allow HTML description in privacy center."
   type        = bool
-  default     = true
+  default     = false
 }
 
 # AWS Networking
@@ -380,7 +380,7 @@ variable "fides_execution_interrupted_task_requeue_interval" {
   default     = 300
 }
 
-variable fides_execution_use_dsr_3_0 {
+variable "fides_execution_use_dsr_3_0" {
   description = "Enables DSR 3.0 for Fides versions <2.70.0."
   type        = bool
   default     = true
