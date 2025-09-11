@@ -56,7 +56,10 @@ locals {
         name  = "FIDES_PRIVACY_CENTER__USE_API_CONFIG"
         value = tostring(var.privacy_center_use_api_config)
       },
-      {
+var.privacy_center_root_property_path != null ? {
+  name  = "FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH"
+  value = var.privacy_center_root_property_path
+} : null
         name  = "FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH"
         value = tostring(var.privacy_center_root_property_path)
       }
