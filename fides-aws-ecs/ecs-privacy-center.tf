@@ -51,7 +51,15 @@ locals {
       {
         name  = "FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED"
         value = tostring(var.privacy_center_is_overlay_enabled)
-      }
+      },
+      {
+        name  = "FIDES_PRIVACY_CENTER__USE_API_CONFIG"
+        value = tostring(var.privacy_center_use_api_config)
+      },
+      var.privacy_center_root_property_path != null ? {
+        name  = "FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH"
+        value = var.privacy_center_root_property_path
+      } : null
     ]
     logConfiguration = {
       logDriver = "awslogs",

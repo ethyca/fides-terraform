@@ -78,6 +78,19 @@ variable "privacy_center_allow_html_description" {
   type        = bool
   default     = false
 }
+variable "privacy_center_use_api_config" {
+  description = "Use API-based configuration instead of static files."
+  type        = bool
+  default     = false
+}
+
+variable "privacy_center_root_property_path" {
+  description = "Root property path for privacy center."
+  nullable    = true
+  type        = string
+  default     = ""
+}
+
 
 # AWS Networking
 
