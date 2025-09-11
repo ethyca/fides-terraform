@@ -58,7 +58,7 @@ locals {
       },
       var.privacy_center_root_property_path != null ? {
         name  = "FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH"
-        value = var.privacy_center_root_property_path,
+        value = var.privacy_center_root_property_path
       } : null
     ]
     logConfiguration = {
