@@ -43,9 +43,6 @@ locals {
       {
         name  = "FIDES_PRIVACY_CENTER__CONFIG_JSON_CSS"
         value = "file://${local.privacy_center_config_path}/config.css"
-<<<<<<< Updated upstream
-      }
-=======
       },
       {
         name  = "FIDES_PRIVACY_CENTER__ALLOW_HTML_DESCRIPTION"
@@ -59,11 +56,10 @@ locals {
         name  = "FIDES_PRIVACY_CENTER__USE_API_CONFIG"
         value = tostring(var.privacy_center_use_api_config)
       },
-     {
+      {
         name  = "FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH"
         value = tostring(var.privacy_center_root_property_path)
       },
->>>>>>> Stashed changes
     ]
     logConfiguration = {
       logDriver = "awslogs",

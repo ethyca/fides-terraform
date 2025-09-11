@@ -61,8 +61,6 @@ variable "privacy_center_version" {
   default     = "2.60.0"
 }
 
-<<<<<<< Updated upstream
-=======
 variable "privacy_center_version" {
   description = "The Privacy Center version to deploy. Must be a valid Docker tag."
   type        = string
@@ -94,7 +92,6 @@ variable "privacy_center_root_property_path" {
 }
 
 
->>>>>>> Stashed changes
 # AWS Networking
 
 variable "aws_region" {
