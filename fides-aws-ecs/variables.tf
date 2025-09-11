@@ -381,9 +381,9 @@ variable "fides_execution_interrupted_task_requeue_interval" {
 }
 
 variable fides_execution_use_dsr_3_0 {
-  description = "Whether to use DSR 3.0. Only applicable if using a Fides version <2.70.0."
+  description = "Enables DSR 3.0 for Fides versions <2.70.0."
   type        = bool
-  default     = false
+  default     = true
 }
 
 # Fides Consent Configuration
